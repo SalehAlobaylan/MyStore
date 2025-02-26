@@ -1,0 +1,142 @@
+/* .header { 
+    display: flex;
+    justify-content: space-between; 
+    padding: 20px; 
+    border-bottom: 1px solid #ccc; 
+}
+img {
+    width: 10em;
+} */
+
+img {
+    width: 100px;
+    max-height: 150px;
+    height: 150px;
+    border-radius: 10px;
+  }
+
+.cart {
+    max-width: 900px;
+    margin: 30px auto;
+    padding: 20px;
+    background: var(--text-light);
+    border-radius: 12px;
+    box-shadow: 0 4px 12px var(--shadow);
+}
+
+.cart h2 {
+    color: #2c3e50;
+    margin-bottom: 25px;
+    font-size: 1.8em;
+    border-bottom: 2px solid #f0f0f0;
+    padding-bottom: 10px;
+}
+
+.cart-item {
+    display: flex;
+    align-items: center;
+    padding: 20px;
+    border: 1px solid var(--primary);
+    border-radius: 8px;
+    margin-bottom: 15px;
+    transition: all 0.3s ease;
+    background: var(--text-light);
+}
+
+.cart-item:hover {
+    border-color: var(--accent);
+    background-color: var(--accent-light);
+    transform: translateX(5px);
+}
+
+.cart-item img {
+    width: 100px;
+    height: 100px;
+    object-fit: cover;
+    border-radius: 6px;
+    margin-right: 20px;
+}
+
+.cart-item-details {
+    flex-grow: 1;
+}
+
+.cart-item h3 {
+    color: #2c3e50;
+    margin: 0 0 10px 0;
+}
+
+.cart-item p {
+    color: #16a085;
+    font-weight: 600;
+    margin: 5px 0;
+}
+
+.cart-footer {
+    margin-top: 30px;
+    padding-top: 20px;
+    border-top: 2px solid var(--primary);
+    text-align: right;
+}
+
+.total {
+    font-size: 1.4em;
+    color: var(--text-dark);
+    font-weight: 600;
+    margin-bottom: 20px;
+}
+
+button {
+    background-color: var(--secondary);
+    color: var(--text-dark);
+    border: none;
+    padding: 12px 25px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+    font-weight: 500;
+}
+
+button:hover {
+    background-color: var(--accent);
+}
+
+select {
+    padding: 8px;
+    border: 2px solid var(--primary);
+    border-radius: 6px;
+    margin: 0 10px;
+    font-size: 0.9em;
+}
+
+.form-margin {
+    margin-bottom: 12px;
+}
+
+.cart-container {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    margin-top: 64px;
+}
+
+.cart-panel {
+    margin-left: 50px;
+    margin-right: 50px;
+}
+
+.product-item-detail{
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: left;
+    max-width: 1024px;
+    margin-bottom: 10px;
+}
+
+.empty-cart-message {
+    display: flex;
+    justify-content: center;
+    margin-top: 64px;
+    color: gray;
+    font-size:30px;
+}

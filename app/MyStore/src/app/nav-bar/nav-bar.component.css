@@ -1,0 +1,37 @@
+/* .navbar {
+    margin: 20px;
+    display: flex;
+    align-items: center; 
+}
+
+.nav-item {
+    margin-left: 20px;
+    margin-right: 20px;
+}
+
+a {
+    color: #ffffff;
+} */
+
+.nav-bar {
+  padding: 20px;
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  background-color: var(--primary);
+}
+
+button {
+  width: 100px;
+  padding: 10px;
+  border-radius: 4px;
+}
+
+button:hover {
+  background-color: var(--accent);
+}
+
+a {
+  color: var(--text-light);
+  text-decoration: none;
+}

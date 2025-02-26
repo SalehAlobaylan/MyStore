@@ -1,0 +1,29 @@
+  .header { 
+    display: flex; 
+    justify-content: space-between; 
+    align-items: center;
+    padding: 20px; 
+    border-bottom: 1px solid #ccc;
+    background-color: var(--text-light);
+  }
+
+  .logo-container {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+  }
+
+  .logo {
+    height: 50px;
+    width: auto;
+  }
+
+  h1 {
+    margin: 0;
+    color: var(--text-dark);
+  }
+
+  .cart-status {
+    color: var(--text-dark);
+    font-weight: 500;
+  }

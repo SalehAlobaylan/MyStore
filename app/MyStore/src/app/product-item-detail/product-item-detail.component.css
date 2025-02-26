@@ -1,0 +1,73 @@
+img {
+    padding: 20px;
+    max-width: 500px;
+    width: 100%;
+    height: auto;
+    object-fit: contain;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease;
+}
+
+img:hover {
+    transform: scale(1.02);
+}
+
+a{
+  text-decoration: none;
+  color: #007bff;
+}
+
+.product-detail {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 20px;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+h2 {
+  font-size: 2em;
+  color: #333;
+  margin: 20px 0;
+  text-align: center;
+}
+
+p {
+  font-size: 1.2em;
+  line-height: 1.6;
+  color: #666;
+  margin: 10px 0;
+  text-align: center;
+}
+
+button {
+  background-color: #007bff;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 5px;
+  font-size: 1.1em;
+  cursor: pointer;
+  transition: background-color 0.3s;
+  margin: 20px 0;
+}
+
+button:hover {
+  background-color: #0056b3;
+}
+
+select {
+    padding: 8px;
+    border: 2px solid var(--primary);
+    border-radius: 6px;
+    margin: 15px auto;
+    font-size: 0.9em;
+    transition: border-color 0.3s;
+  }
+
+  select:focus {
+    border-color: var(--accent);
+    outline: none;
+  }

@@ -1,0 +1,58 @@
+<!-- <div class="detail-container" *ngIf="product">
+    <div fxLayout="row wrap" fxLayoutAlign="space-between center">
+      <div fxLayout="column" fxLayoutAlign="space-between center">
+        <img class="product-image" src="{{ product.url }}" />
+      </div>
+      <div class="detail-item">
+        <div class="product-item-detail product-title">
+          <b>{{ product.name }}</b>
+        </div>
+        <div class="product-item-detail">$ {{ product.price }}</div>
+        <div class="product-item-detail">{{ product.description }}</div>
+  
+        <form (ngSubmit)="onSubmit(product)">
+          <select
+            style="width: 100px;"
+            class="product-item-detail form-select"
+            aria-label="Default select example"
+          >
+            <option selected value="1">1</option>
+            <option value="2">2</option>
+            <option value="3">3</option>
+            <option value="4">4</option>
+            <option value="5">5</option>
+          </select>
+          <input
+            type="submit"
+            value="Add to Cart"
+            class="product-item-detail btn btn-primary"
+          />
+        </form>
+        <div class="product-item-detail">
+          <a routerLink="/"> &larr;Return to product list </a>
+        </div>
+      </div>
+    </div>
+  </div>
+   -->
+
+<div class="product-detail" *ngIf="product">
+  <img [src]="product.images | firstImage" [alt]="product.name" />
+  <h2>{{ product.name }}</h2>
+  <p>{{ product.description }}</p>
+  <p>{{ product.price * selectedQuantity | currency }}</p>
+
+  <select
+    [(ngModel)]="selectedQuantity"
+    class="form-select"
+    style="width: 100px; margin: 1em"
+  >
+    <option [value]="1">1</option>
+    <option [value]="2">2</option>
+    <option [value]="3">3</option>
+    <option [value]="4">4</option>
+    <option [value]="5">5</option>
+  </select>
+
+  <button (click)="addToCart()">Add to Cart</button>
+</div>

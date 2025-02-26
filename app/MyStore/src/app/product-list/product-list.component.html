@@ -1,0 +1,105 @@
+<!-- <div class="container">
+    <div >
+    <div > 
+        <a routerLink="item-detail/{{ product.id }}">
+            <img class="product-image" src='{{ product.url }}'>
+        </a>
+        <div class="product-detail"></div>
+        <div class="product-detail"></div>
+
+        <form >
+            <select  class="product-detail form-select" aria-label="Default select example">
+
+            </select>
+            <input type="submit" value="Add to Cart" class="product-detail btn btn-primary">
+        </form>
+    </div>
+    </div>
+</div> -->
+
+<!--  -->
+
+
+
+<!-- <div class="row">
+    <div *ngFor="let product of products" class="col-sm-4 col-lg-4 col-md-4">
+      <app-product-item [product]="product"></app-product-item>
+    </div>
+  </div> -->
+
+
+
+
+
+
+
+
+
+
+<!--   
+  <div class="container">
+    <div class="row">
+      <div *ngFor="let product of products" class="col-sm-4 col-lg-4 col-md-4">
+        <div class="card">
+          <a [routerLink]="'item-detail/' + product.id">
+            <img
+              class="card-img-top product-image"
+              [src]="product.url"
+              [alt]="product.name"
+            />
+          </a>
+          <div class="card-body">
+            <h5 class="card-title">{{ product.name }}</h5>
+            <p class="card-text">$ {{ product.price }}</p>
+            <form>
+              <select
+                class="form-select"
+                aria-label="Quantity"
+                style="width: 100px; margin-bottom: 10px;"
+              >
+                <option selected value="1">1</option>
+                <option value="2">2</option>
+                <option value="3">3</option>
+                <option value="4">4</option>
+                <option value="5">5</option>
+              </select>
+              <button
+                type="button"
+                class="btn btn-primary"
+                (click)="addToCart(product)"
+              >
+                Add to Cart
+              </button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div> -->
+  
+
+
+
+
+
+
+
+
+
+
+<!-- 
+  <h2>Products</h2>
+<div class="product-list">
+  <app-product-item 
+    *ngFor="let product of products$ | async"
+    [product]="product">
+  </app-product-item>
+</div> -->
+
+
+
+<div class="product-list">
+  <app-product-item *ngFor="let product of products"[product]="product">
+    
+  </app-product-item>
+</div>

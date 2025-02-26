@@ -1,0 +1,63 @@
+:root {
+  --primary: #FFDCCC;
+  --primary-dark: #FBF3B9;
+  --secondary: #FDB7EA;
+  --accent: #F8BBD0;
+  --accent-light: #FDB7EA;
+  --text-dark: #2c3e50;
+  --text-light: #ffffff;
+  --shadow: rgba(0, 0, 0, 0.1);
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  font-family: 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+  background-color: var(--primary-dark);
+  color: var(--text-dark);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+button:focus, select:focus {
+  outline: none;
+}
+
+.product-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 25px;
+  padding: 20px;
+}
+
+button {
+  background-color: var(--secondary);
+  color: var(--text-dark);
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+button:hover {
+  background-color: var(--accent);
+  transform: translateY(-2px);
+}
+
+a {
+  color: var(--secondary);
+  text-decoration: none;
+}
+
+a:hover {
+  color: var(--accent);
+}
