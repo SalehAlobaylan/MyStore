@@ -1,5 +1,9 @@
-<div class="confirmation">
-    <h2>Order Confirmed!</h2>
-    <p>Thank you for your purchase!</p>
-    <a routerLink="/products">Continue Shopping</a>
-  </div>
+<div class="confirmation" *ngIf="orderDetails">
+  <h2>Success! 🎉</h2>
+  <p>Thank you for your order, {{ orderDetails.fullName }}!</p>
+  <p>Your order total is: {{ orderDetails.total | currency }}</p>
+  <p>
+    Please check your email for the order confirmation and shipping details.
+  </p>
+  <a routerLink="/products">Continue Shopping</a>
+</div>

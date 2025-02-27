@@ -19,10 +19,81 @@
       </select>
     </div>
   </div>
-  <div class="cart-footer" *ngIf="(items$ | async)?.length">
+
+  <div *ngIf="(items$ | async)?.length">
     <p class="total">Total: {{ total | currency }}</p>
-    <button (click)="checkout()">Checkout</button>
+
+    <form #checkoutForm="ngForm" (ngSubmit)="onSubmit()" class="checkout-form">
+      <div class="form-group">
+        <label for="fullName">Full Name</label>
+        <input
+          type="text"
+          id="fullName"
+          name="fullName"
+          [(ngModel)]="form.fullName"
+          required
+          minlength="3"
+          #fullName="ngModel"
+        />
+        <div
+          *ngIf="fullName.invalid && (fullName.dirty || fullName.touched)"
+          class="error"
+        >
+          <div *ngIf="fullName.errors?.['required']">Name is required</div>
+          <div *ngIf="fullName.errors?.['minlength']">
+            Name must be at least 3 characters
+          </div>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="address">Address</label>
+        <input
+          type="text"
+          id="address"
+          name="address"
+          [(ngModel)]="form.address"
+          required
+          #address="ngModel"
+        />
+        <div
+          *ngIf="address.invalid && (address.dirty || address.touched)"
+          class="error"
+        >
+          <div *ngIf="address.errors?.['required']">Address is required</div>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="creditCard">Credit Card Number</label>
+        <input
+          type="text"
+          id="creditCard"
+          name="creditCard"
+          [(ngModel)]="form.creditCard"
+          required
+          pattern="[0-9]{16}"
+          #creditCard="ngModel"
+        />
+        <div
+          *ngIf="creditCard.invalid && (creditCard.dirty || creditCard.touched)"
+          class="error"
+        >
+          <div *ngIf="creditCard.errors?.['required']">
+            Credit card number is required
+          </div>
+          <div *ngIf="creditCard.errors?.['pattern']">
+            Please enter a valid 16-digit card number
+          </div>
+        </div>
+      </div>
+
+      <button type="submit" [disabled]="checkoutForm.invalid">
+        Submit Order
+      </button>
+    </form>
   </div>
+
   <div *ngIf="!(items$ | async)?.length">
     <p>Your cart is empty</p>
   </div>

@@ -6,6 +6,7 @@ import { CartService } from '../services/cart.service';
 import { Router } from '@angular/router';
 import { Product } from '../modules/product';
 import { FirstImagePipe } from '../pipes/first-image.pipe';
+import { CheckoutForm } from '../modules/checkout-form';
 
 @Component({
   selector: 'app-cart',
@@ -17,6 +18,12 @@ import { FirstImagePipe } from '../pipes/first-image.pipe';
 export class CartComponent implements OnInit {
   items$: Observable<Product[]>;
   total: number = 0;
+  form: CheckoutForm = {
+    fullName: '',
+    address: '',
+    creditCard: '',
+    total: 0,
+  };
 
   constructor(private cartService: CartService, private router: Router) {
     this.items$ = this.cartService.items$;
@@ -28,6 +35,7 @@ export class CartComponent implements OnInit {
         (sum, item) => sum + item.price * (item.quantity || 1),
         0
       );
+      this.form.total = this.total;
     });
   }
 
@@ -35,8 +43,12 @@ export class CartComponent implements OnInit {
     this.cartService.updateItemQuantity(item);
   }
 
-  checkout(): void {
-    this.router.navigate(['/confirmation']);
+  onSubmit(): void {
+    this.router.navigate(['/confirmation'], {
+      state: {
+        orderDetails: this.form,
+      },
+    });
     this.cartService.clearCart();
   }
 }
