@@ -1,26 +1,3 @@
-// import { Injectable } from '@angular/core';
-// import { Product } from '../modules/product';
-
-// @Injectable({
-//   providedIn: 'root',
-// })
-// export class CartService {
-//   private items: Product[] = [];
-
-//   addToCart(product: Product) {
-//     this.items.push(product);
-//   }
-
-//   getItems() {
-//     return this.items;
-//   }
-
-//   clearCart() {
-//     this.items = [];
-//     return this.items;
-//   }
-// }
-
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { Product } from '../modules/product';
@@ -39,7 +16,8 @@ export class CartService {
     const existingItem = currentItems.find(item => item.index === product.index);
     
     if (existingItem) {
-      // Update quantity if item exists
+      // Update quantity if item exists added it to in cart 
+      // to make the user change the quantity in cart also
       const updatedItems = currentItems.map(item => 
         item.index === product.index 
           ? { ...item, quantity: (item.quantity || 0) + (product.quantity || 1) }

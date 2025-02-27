@@ -8,16 +8,6 @@ import { CartService } from '../services/cart.service';
 import { FirstImagePipe } from '../pipes/first-image.pipe';
 
 @Component({
-  // selector: 'app-product-item-detail',
-  // template: `
-  //   <div class="product-detail" *ngIf="product">
-  //     <img [src]="product.url" [alt]="product.name">
-  //     <h2>{{ product.name }}</h2>
-  //     <p>{{ product.description }}</p>
-  //     <p>{{ product.price | currency }}</p>
-  //     <button (click)="addToCart()">Add to Cart</button>
-  //   </div>
-  // `,
   selector: 'app-product-item-detail',
   standalone: true,
   imports: [CommonModule, FormsModule, FirstImagePipe],
@@ -53,23 +43,3 @@ export class ProductItemDetailComponent implements OnInit {
     }
   }
 }
-
-// onSubmit(): void {
-//   if (this.product) {
-//     this.productService.addProduct({
-//       name: this.name,
-//       description: this.description,
-//       price: parseFloat(this.price),
-//       url: this.url,
-//       id: 0
-//       // quantity: 0
-//     });
-
-//     this.name = "";
-//     this.description = "";
-//     this.price = "";
-//     this.url = "";
-//   }
-// }
-
-// }

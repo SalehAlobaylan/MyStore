@@ -12,7 +12,7 @@ import { provideHttpClient, withFetch } from '@angular/common/http';
 
 bootstrapApplication(AppComponent, {
   providers: [
-    provideRouter(routes),
+    provideRouter(routes), // added this to solve a critical error faced it before (in data retreiving)
     provideHttpClient(withFetch()) 
   ]
 });

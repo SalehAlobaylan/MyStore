@@ -4,7 +4,7 @@ import { appConfig } from './app.config';
 
 const serverConfig: ApplicationConfig = {
   providers: [
-    provideServerRendering()
+    provideServerRendering() // added this to solve critical error i faced it before (in data retreiving)
   ]
 };
 

@@ -6,7 +6,7 @@ import { routes } from './app.routes';
 import { provideClientHydration } from '@angular/platform-browser';
 
 export const appConfig: ApplicationConfig = {
-  providers: [
+  providers: [ // added this to solve a critical error faced it before (in data retreiving)
     provideZoneChangeDetection({ eventCoalescing: true }),
     provideRouter(routes),
     provideClientHydration(),

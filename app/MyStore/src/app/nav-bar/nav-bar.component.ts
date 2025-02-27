@@ -11,15 +11,3 @@ import {RouterLink} from '@angular/router'
 export class NavBarComponent {
 
 }
-
-
-// template: `
-// <nav class="nav-bar">
-//   <a routerLink="/products">Products</a>
-//   <a routerLink="/cart">Cart</a>
-// </nav>
-// `,
-// styles: [`
-// .nav-bar { padding: 10px 20px; background: #f8f9fa; }
-// a { margin-right: 15px; text-decoration: none; color: #333; }
-// `]

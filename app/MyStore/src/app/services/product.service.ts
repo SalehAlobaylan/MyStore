@@ -7,13 +7,17 @@ import { Product } from '../modules/product';
   providedIn: 'root',
 })
 export class ProductService {
-  private apiUrl = 'http://localhost:3000/api'; // Backend API URL
+  private apiUrl = 'http://localhost:3000/api'; // Backend API URL if the data came from backend
 
   constructor(private http: HttpClient) {}
 
   getProducts(): Observable<Product[]> {
     return this.http.get<Product[]>(`${this.apiUrl}/products`).pipe(
-      switchMap((products) => {
+      switchMap((products) => {  // here sometimes the backend don't send data
+        // so if the database is empty the backend is useless
+        // and if it empty the website will be empty so i made another way to get data
+        // from static json file not from Mongo database
+        // the data is the same in the two ways so it will work
         if (products && products.length > 0) {
           return of(products);
         }
@@ -46,60 +50,3 @@ export class ProductService {
     return this.http.delete<void>(`${this.apiUrl}/products/${id}`);
   }
 }
-
-// const products = [
-//   {
-//     "id": 0,
-//     "title": "First Product",
-//     "price": 24.99,
-//     "rating": 4.3,
-//     "shortDescription": "This is a short description of the First Product",
-//     "description": "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
-//     "categories": ["electronics", "hardware"]
-//   },
-//   {
-//     "id": 1,
-//     "title": "Second Product",
-//     "price": 64.99,
-//     "rating": 3.5,
-//     "shortDescription": "This is a short description of the Second Product",
-//     "description": "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
-//     "categories": ["books"]
-//   },
-//   {
-//     "id": 2,
-//     "title": "Third Product",
-//     "price": 74.99,
-//     "rating": 4.2,
-//     "shortDescription": "This is a short description of the Third Product",
-//     "description": "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
-//     "categories": ["electronics"]
-//   },
-//   {
-//     "id": 3,
-//     "title": "Fourth Product",
-//     "price": 84.99,
-//     "rating": 3.9,
-//     "shortDescription": "This is a short description of the Fourth Product",
-//     "description": "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
-//     "categories": ["hardware"]
-//   },
-//   {
-//     "id": 4,
-//     "title": "Fifth Product",
-//     "price": 94.99,
-//     "rating": 5,
-//     "shortDescription": "This is a short description of the Fifth Product",
-//     "description": "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
-//     "categories": ["electronics", "hardware"]
-//   },
-//   {
-//     "id": 5,
-//     "title": "Sixth Product",
-//     "price": 54.99,
-//     "rating": 4.6,
-//     "shortDescription": "This is a short description of the Sixth Product",
-//     "description": "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
-//     "categories": ["books"]
-//   }
-// ];
