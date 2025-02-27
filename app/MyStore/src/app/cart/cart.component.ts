@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Observable } from 'rxjs';
+import { Observable, firstValueFrom } from 'rxjs';
 import { CartService } from '../services/cart.service';
 import { Router } from '@angular/router';
 import { Product } from '../modules/product';
@@ -30,12 +30,9 @@ export class CartComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    // Optional: Calculate the total for display purposes
     this.items$.subscribe((items) => {
-      this.total = items.reduce(
-        (sum, item) => sum + item.price * (item.quantity || 1),
-        0
-      );
-      this.form.total = this.total;
+      this.total = items.reduce((sum, item) => sum + item.price * (item.quantity || 1), 0);
     });
   }
 
@@ -43,12 +40,24 @@ export class CartComponent implements OnInit {
     this.cartService.updateItemQuantity(item);
   }
 
-  onSubmit(): void {
-    this.router.navigate(['/confirmation'], {
-      state: {
-        orderDetails: this.form,
-      },
-    });
-    this.cartService.clearCart();
+  async onSubmit(): Promise<void> {
+    try {
+      // Get the latest cart items (to solve the total confirmation error that happened)
+      const items = await firstValueFrom(this.items$);
+
+      this.form.total = items.reduce(
+        (sum, item) => sum + item.price * (item.quantity || 1),
+        0
+      );
+
+      await this.router.navigate(['/confirmation'], {
+        state: { orderDetails: this.form },
+      });
+
+      // Clear the cart
+      this.cartService.clearCart();
+    } catch (error) {
+      console.error('Error during submission:', error);
+    }
   }
 }
