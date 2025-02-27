@@ -9,14 +9,14 @@
 * so to setup the database Creat a collection Called "Nike" and with collection called "Nike" ,
 ** you can adjust the database and collection name in this file (lines 25 , 28) : https://github.com/SalehAlobaylan/MyStore/blob/main/app/backend/database/models/product.model.ts
 * Mongo database connection address:
-- mongodb://127.0.0.1:27017/NikeProducts
+```mongodb://127.0.0.1:27017/NikeProducts```
 * you can adjust it here: https://github.com/SalehAlobaylan/MyStore/blob/main/app/backend/database/MongoDatabase.ts
 
 # Running the Website (Locate to "app" folder):
-- cd .\app\
-- npm install
+```cd .\app\```
+```npm install```
 ## To run the backend (port 3000) -not necessary-:
--  npm run dev:backend
+```npm run dev:backend```
 ## To run the frontend (port 4200):
-- npm run start:frontend
+```npm run start:frontend```
 - http://localhost:4200/
