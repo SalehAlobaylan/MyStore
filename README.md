@@ -10,10 +10,10 @@
 
 * Note: you don't have to set the database you can use it without the backed i added a backup way to retrieve data from the frontend in this location:  https://github.com/SalehAlobaylan/MyStore/blob/main/app/MyStore/src/assets/Nike.Nike.json
 
-* so to setup the database Creat a collection Called "Nike" and with collection called "Nike" ,
+* so to setup the database in mongoDB Create a database Called "Nike" and with collection called "Nike" ,
     you can adjust the database and collection name in this file (lines 25 , 28) : https://github.com/SalehAlobaylan/MyStore/blob/main/app/backend/database/models/product.model.ts
 * Mongo database connection address:
-        mongodb://127.0.0.1:27017/NikeProducts
+```mongodb://127.0.0.1:27017/NikeProducts```
 * you can adjust it here: https://github.com/SalehAlobaylan/MyStore/blob/main/app/backend/database/MongoDatabase.ts
 
 ## Running the Website (Locate to "app" folder):
