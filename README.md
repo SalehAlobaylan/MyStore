@@ -1,10 +1,11 @@
 # Launching Point Store
 - A store built with MEAN stack
-- it's a simple demonstration website without authentication fouced in frontend with angular
+- it's a simple demonstration website without authentication just checkout form and fouced in frontend with angular
 - it contains products in the landing page with navigation bar to navigate to the cart or opposite,
 - the header contains number of products calculator in the cart
 - you can select number of same product that you want to add to the cart, also you can change it in the cart if you changed your mind after seeing the overall price
 - User-friendly UX/UI
+- user-friendly aesthetic Notifications 
 
 #### first to make sure the backend works setup the database:
 
