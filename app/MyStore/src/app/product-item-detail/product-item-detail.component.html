@@ -17,4 +17,8 @@
   </select>
 
   <button (click)="addToCart()">Add to Cart</button>
+
+  <div *ngIf="showNotification" class="notification">
+    {{ notificationMessage }}
+  </div>
 </div>

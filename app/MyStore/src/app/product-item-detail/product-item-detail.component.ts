@@ -17,6 +17,8 @@ import { FirstImagePipe } from '../pipes/first-image.pipe';
 export class ProductItemDetailComponent implements OnInit {
   product?: Product;
   selectedQuantity: number = 1;
+  showNotification = false;
+  notificationMessage = '';
 
   constructor(
     private route: ActivatedRoute,
@@ -40,6 +42,12 @@ export class ProductItemDetailComponent implements OnInit {
         quantity: this.selectedQuantity,
       };
       this.cartService.addToCart(productWithQuantity);
+      this.showNotification = true;
+    this.notificationMessage = `Added ${this.selectedQuantity} ${this.product.name}(s) to cart`;
+
+    setTimeout(() => {
+      this.showNotification = false;
+    }, 3000);
     }
   }
 }
