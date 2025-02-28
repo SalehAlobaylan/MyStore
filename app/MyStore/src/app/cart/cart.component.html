@@ -23,9 +23,12 @@
         >
           Remove
         </button>
+      </div>
     </div>
-  </div>
-
+    
+    <div *ngIf="showNotification" class="notification">
+      {{ notificationMessage }}
+    </div>
   <div *ngIf="(items$ | async)?.length">
     <p class="total">Total: {{ total | currency }}</p>
 

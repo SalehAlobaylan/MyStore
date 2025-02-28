@@ -18,6 +18,11 @@ import { CheckoutForm } from '../modules/checkout-form';
 export class CartComponent implements OnInit {
   items$: Observable<Product[]>;
   total: number = 0;
+
+  product?: Product;
+  showNotification = false;
+  notificationMessage = '';
+  
   form: CheckoutForm = {
     fullName: '',
     address: '',
@@ -38,6 +43,13 @@ export class CartComponent implements OnInit {
 
   removeFromCart(item: Product): void {
     this.cartService.removeItem(item);
+
+    this.showNotification = true;
+    this.notificationMessage = `Removed  ${item.name} from the cart`;
+
+  setTimeout(() => {
+    this.showNotification = false;
+  }, 3000);
   }
 
   updateQuantity(item: Product): void {
