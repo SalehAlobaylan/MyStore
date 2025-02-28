@@ -185,3 +185,28 @@ button[type="submit"]:disabled {
   background-color: #ccc;
   cursor: not-allowed;
 }
+
+.item-controls {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+    margin-top: 1em;
+  }
+  
+  .remove-button {
+    background: #dc3545;
+    color: white;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background 0.3s ease;
+  }
+  
+  .remove-button:hover {
+    background: #bb2d3b;
+  }
+  
+  .form-select {
+    width: 100px;
+  }

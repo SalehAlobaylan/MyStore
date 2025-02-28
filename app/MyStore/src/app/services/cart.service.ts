@@ -30,6 +30,13 @@ export class CartService {
     }
   }
 
+  removeItem(itemToRemove: Product): void {
+    const updatedItems = this.itemsSubject.value.filter(
+      item => item.index !== itemToRemove.index 
+    );
+    this.itemsSubject.next(updatedItems);
+  }
+
   updateItemQuantity(product: Product): void {
     const currentItems = this.itemsSubject.getValue();
     const updatedItems = currentItems.map(item => 
