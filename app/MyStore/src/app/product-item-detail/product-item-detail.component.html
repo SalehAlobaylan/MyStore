@@ -16,8 +16,8 @@
     <option [value]="5">5</option>
   </select>
 
-  <button (click)="addToCart()">Add to Cart</button>
-
+  <button (click)="onAddToCart()">Add to Cart</button>
+  
   <div *ngIf="showNotification" class="notification">
     {{ notificationMessage }}
   </div>
