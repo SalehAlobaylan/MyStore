@@ -7,7 +7,9 @@ import { Product } from '../modules/product';
   providedIn: 'root',
 })
 export class ProductService {
-  private apiUrl = 'http://localhost:3000/api'; // Backend API URL if the data came from backend
+  // private apiUrl = 'http://localhost:3000/api'; // Backend API URL if the data came from backend
+  private apiUrl = 'mystoredb.cqc8bwsn9skh.us-east-1.rds.amazonaws.com/api'; // backend API is hosted on Elastic Beanstalk
+
 
   constructor(private http: HttpClient) {}
 
