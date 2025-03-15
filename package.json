@@ -7,7 +7,7 @@
     "frontend:install": "cd MyStore && npm install",
     "start:frontend": "cd app/MyStore && ng serve",
     "start:backend": "tsx app/backend/server.ts",
-    "dev:backend": "nodemon --exec tsx backend/server.ts"
+    "dev:backend": "nodemon --exec tsx app/backend/server.ts"
   },
   "dependencies": {
     "cors": "^2.8.5",
