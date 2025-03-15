@@ -10,6 +10,13 @@ jobs:
     docker:
       # the base image can run most needed actions with orbs
       - image: circleci/node:16
+      - image: mongo:6.0
+        environment:
+          MONGO_INITDB_ROOT_USERNAME: root
+          MONGO_INITDB_ROOT_PASSWORD: password123
+          MONGO_INITDB_DATABASE: Nike
+    environment:
+      MONGODB_URI: "mongodb://root:password123@localhost:27017/Nike?authSource=admin"
     steps:
       # install node and checkout code
       - node/install:
@@ -28,12 +35,14 @@ jobs:
             echo $(npm --version)
             echo "it was 'cd app/MyStore && npm install'"
             npm run frontend:install
+            sleep 5
       # Install dependencies in the backend API
       - run:
           name: Install API Dependencies
           command: |
             echo "Installing backend dependencies"
-            # npm run backend:install
+            npm run backend:install
+            sleep 5
       # Lint the frontend
       # - run:
       #     name: Front-End Lint
@@ -52,7 +61,14 @@ jobs:
           name: API Build
           command: |
             echo "Building the backend API"
-            # npm run start:backend
+            # Wait for MongoDB to be ready
+            dockerize -wait tcp://localhost:27017 -timeout 1m
+            npm run start:backend
+      - run:
+          name: Install dockerize
+          command: wget https://github.com/jwilder/dockerize/releases/download/$DOCKERIZE_VERSION/dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz && sudo tar -C /usr/local/bin -xzvf dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz
+          environment:
+            DOCKERIZE_VERSION: v0.6.1
   # deploy step will run only after manual approval
   deploy:
     docker:
@@ -74,7 +90,7 @@ jobs:
 
             # Build applications
             # cd .. && 
-            # npm run build:backend
+            npm run build:backend
             frontend:Build
 
             # Deploy to AWS

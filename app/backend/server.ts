@@ -9,7 +9,7 @@ const port = 3000;
 app.use(cors());
 app.use(express.json());
 
-mongoose.connect("mongodb://127.0.0.1:27017/Nike");
+mongoose.connect(process.env.MONGODB_URI || "mongodb://127.0.0.1:27017/Nike");
 
 app.get("/api/products", async (req, res) => {
   try {

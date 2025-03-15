@@ -6,13 +6,16 @@
     "backend:install": "npm install",
     "frontend:install": "cd app/MyStore && npm install",
     "start:frontend": "cd app/MyStore && ng serve",
-    "start:backend": "tsx app/backend/server.ts",
-    "dev:backend": "nodemon --exec tsx app/backend/server.ts",
-    "frontend:Build": "cd app/MyStore && ng build"
+    "start:backend": "tsx -r dotenv/config app/backend/server.ts", 
+    "dev:backend": "nodemon --exec tsx -r dotenv/config app/backend/server.ts", 
+    "frontend:Build": "cd app/MyStore && ng build",
+    "test:backend": "dockerize -wait tcp://localhost:27017 && echo 'MongoDB ready'"
 
   },
   "dependencies": {
     "cors": "^2.8.5",
+    "dockerize": "^0.1.0",
+    "dotenv": "^16.4.7",
     "express": "^4.18.2",
     "mongoose": "^8.0.3"
   },
