@@ -3,8 +3,10 @@
   "version": "1.0.0",
   "type": "module",
   "scripts": {
-    "start:frontend": "cd MyStore && ng serve",
-    "start:backend": "tsx backend/server.ts",
+    "backend:install": "npm install",
+    "frontend:install": "cd MyStore && npm install",
+    "start:frontend": "cd app/MyStore && ng serve",
+    "start:backend": "tsx app/backend/server.ts",
     "dev:backend": "nodemon --exec tsx backend/server.ts"
   },
   "dependencies": {
