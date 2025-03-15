@@ -18,7 +18,7 @@ jobs:
             echo $(node --version)
             echo "NPM --version" 
             echo $(npm --version)
-            npm run frontend:install
+            cd MyStore && npm install
       - run:
           name: Install API Dependencies
           command: |
