@@ -6,10 +6,11 @@
     "backend:install": "npm install",
     "frontend:install": "cd app/MyStore && npm install",
     "start:frontend": "cd app/MyStore && ng serve",
-    "start:backend": "tsx -r dotenv/config app/backend/server.ts", 
+    "start:backend": "tsx -r dotenv/config app/backend/server.ts",
     "dev:backend": "nodemon --exec tsx -r dotenv/config app/backend/server.ts", 
     "frontend:Build": "cd app/MyStore && ng build",
-    "test:backend": "dockerize -wait tcp://localhost:27017 && echo 'MongoDB ready'"
+    "test:backend": "curl --retry 5 --retry-delay 3 --retry-connrefused http://localhost:3000/api/products",
+    "ci:backend": "npm run start:backend & npm run test:backend && kill $!"
 
   },
   "dependencies": {
