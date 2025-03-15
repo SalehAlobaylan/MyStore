@@ -4,7 +4,7 @@
   "type": "module",
   "scripts": {
     "backend:install": "npm install",
-    "frontend:install": "cd MyStore && npm install",
+    "frontend:install": "cd app/MyStore && npm install",
     "start:frontend": "cd app/MyStore && ng serve",
     "start:backend": "tsx app/backend/server.ts",
     "dev:backend": "nodemon --exec tsx app/backend/server.ts"
