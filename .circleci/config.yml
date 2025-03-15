@@ -53,7 +53,7 @@ jobs:
             cd MyStore && npm run build
             echo "Deploying applications to AWS"
 workflows:
-  Mystore:
+  mystore:
     jobs:
       - build
       - hold:
