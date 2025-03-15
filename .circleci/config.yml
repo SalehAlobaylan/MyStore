@@ -5,10 +5,12 @@ orbs:
   aws-cli: circleci/aws-cli@3.1.1
 jobs:
   build:
+    docker:
+      - image: cimg/node:16.17.0
     steps:
-      - node/install:
-          node-version: "20"
       - checkout
+      - node/install:
+          node-version: '16.17.0'
       - run:
           name: Install Front-End Dependencies
           command: |
@@ -16,7 +18,7 @@ jobs:
             echo $(node --version)
             echo "NPM --version" 
             echo $(npm --version)
-            cd MyStore && npm install
+            npm run frontend:install
       - run:
           name: Install API Dependencies
           command: |
@@ -34,24 +36,23 @@ jobs:
             npm run start:backend
   deploy:
     docker:
-      - image: "cimg/base:stable"
+      - image: cimg/base:stable
     steps:
+      - checkout
       - node/install:
-          node-version: "20"
+          node-version: '16.17.0'
       - eb/setup
       - aws-cli/setup
-      - checkout
       - run:
           name: Deploy App
           command: |
             echo "Installing and building applications"
             npm run backend:install
-            cd MyStore && npm install
-            cd .. && npm run build:backend
+            npm run frontend:install
             cd MyStore && npm run build
             echo "Deploying applications to AWS"
 workflows:
-  udagram:
+  mystore:
     jobs:
       - build
       - hold:
