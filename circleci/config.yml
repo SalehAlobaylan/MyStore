@@ -44,7 +44,7 @@ jobs:
           name: Front-End Build
           command: |
             echo "Building the frontend app"
-            cd MyStore && npm run build
+            npm run frontend:Build
       # Build the backend API
       - run:
           name: API Build
@@ -68,16 +68,17 @@ jobs:
             echo "Installing and building applications"
             # Install dependencies
             npm run backend:install
-            cd MyStore && npm install
+            npm run frontend:install
 
             # Build applications
-            cd .. && npm run build:backend
-            cd MyStore && npm run build
+            # cd .. && 
+            npm run build:backend
+            frontend:Build
 
             # Deploy to AWS
             echo "Deploying applications to AWS"
-            # Add deployment commands here
-
+            # eb deploy MyStore-env
+            eb deploy mystoreEB-dev
 workflows:
   Mystore:
     jobs:
