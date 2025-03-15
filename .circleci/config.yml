@@ -9,7 +9,7 @@ jobs:
   build:
     docker:
       # the base image can run most needed actions with orbs
-      - image: circleci/node:14
+      - image: circleci/node:16
     steps:
       # install node and checkout code
       - node/install:
