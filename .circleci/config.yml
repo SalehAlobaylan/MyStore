@@ -6,11 +6,11 @@ orbs:
 jobs:
   build:
     docker:
-      - image: cimg/node:16.17.0
+      - image: "cimg/node:14.15"
     steps:
-      - checkout
       - node/install:
-          node-version: '16.17.0'
+          node-version: "20"
+      - checkout
       - run:
           name: Install Front-End Dependencies
           command: |
@@ -36,23 +36,24 @@ jobs:
             npm run start:backend
   deploy:
     docker:
-      - image: cimg/base:stable
+      - image: "cimg/base:stable"
     steps:
-      - checkout
       - node/install:
-          node-version: '16.17.0'
+          node-version: "20"
       - eb/setup
       - aws-cli/setup
+      - checkout
       - run:
           name: Deploy App
           command: |
             echo "Installing and building applications"
             npm run backend:install
-            npm run frontend:install
+            cd MyStore && npm install
+            cd .. && npm run build:backend
             cd MyStore && npm run build
             echo "Deploying applications to AWS"
 workflows:
-  mystore:
+  Mystore:
     jobs:
       - build
       - hold:
