@@ -9,12 +9,15 @@ jobs:
   build:
     docker:
       # the base image can run most needed actions with orbs
-      - image: "cimg/node:14.15"
+      - image: circleci/node:14
     steps:
       # install node and checkout code
       - node/install:
           node-version: "20"
       - checkout
+      - run:
+          name: Install Angular CLI
+          command: npm install -g @angular/cli
       # Use root level package.json to install dependencies in the frontend app
       - run:
           name: Install Front-End Dependencies
