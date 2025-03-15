@@ -1,16 +1,21 @@
 version: 2.1
 orbs:
+  # orbs contain basic recipes and reproducible actions (install node, aws, etc.)
   node: circleci/node@5.0.2
   eb: circleci/aws-elastic-beanstalk@2.0.1
   aws-cli: circleci/aws-cli@3.1.1
+  # different jobs are called later in the workflows sections
 jobs:
   build:
     docker:
-      - image: cimg/node:20.19.0
+      # the base image can run most needed actions with orbs
+      - image: "cimg/node:14.15"
     steps:
-      - checkout
+      # install node and checkout code
       - node/install:
-          node-version: '20.19.0'
+          node-version: "20"
+      - checkout
+      # Use root level package.json to install dependencies in the frontend app
       - run:
           name: Install Front-End Dependencies
           command: |
@@ -18,40 +23,62 @@ jobs:
             echo $(node --version)
             echo "NPM --version" 
             echo $(npm --version)
+            echo "it was 'cd app/MyStore && npm install'"
             npm run frontend:install
+      # Install dependencies in the backend API
       - run:
           name: Install API Dependencies
           command: |
             echo "Installing backend dependencies"
             npm run backend:install
+
+      # Lint the frontend
+      # - run:
+      #     name: Front-End Lint
+      #     command: |
+      #       echo "Running frontend linting"
+      #       cd MyStore && npm run lint
+
+      # Build the frontend app
       - run:
           name: Front-End Build
           command: |
             echo "Building the frontend app"
-            cd MyStore && npm run build
+            npm run frontend:Build
+      # Build the backend API
       - run:
-          name: API Start
+          name: API Build
           command: |
-            echo "Starting the backend API"
-            npm run start:backend & 
-            sleep 5
+            echo "Building the backend API"
+            npm run start:backend
+  # deploy step will run only after manual approval
   deploy:
     docker:
-      - image: cimg/base:stable
+      - image: "cimg/base:stable"
+      # more setup needed for aws, node, elastic beanstalk
     steps:
-      - checkout
       - node/install:
-          node-version: '20.19.0'
+          node-version: "20"
       - eb/setup
       - aws-cli/setup
+      - checkout
       - run:
           name: Deploy App
           command: |
             echo "Installing and building applications"
+            # Install dependencies
             npm run backend:install
             npm run frontend:install
-            cd MyStore && npm run build
+
+            # Build applications
+            # cd .. && 
+            npm run build:backend
+            frontend:Build
+
+            # Deploy to AWS
             echo "Deploying applications to AWS"
+            # eb deploy MyStore-env
+            eb deploy mystoreEB-dev
 workflows:
   Mystore:
     jobs:
