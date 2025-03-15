@@ -23,7 +23,8 @@ jobs:
             echo $(node --version)
             echo "NPM --version" 
             echo $(npm --version)
-            cd MyStore && npm install
+            echo "it was 'cd app/MyStore && npm install'"
+            npm run frontend:install
       # Install dependencies in the backend API
       - run:
           name: Install API Dependencies
