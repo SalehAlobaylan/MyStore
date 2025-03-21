@@ -6,24 +6,35 @@
     "backend:install": "npm install",
     "frontend:install": "cd app/MyStore && npm install",
     "start:frontend": "cd app/MyStore && ng serve",
-    "start:backend": "tsx -r dotenv/config app/backend/server.ts",
-    "dev:backend": "nodemon --exec tsx -r dotenv/config app/backend/server.ts", 
+    "serve": "npm run start:frontend",
+    "start:backend": "tsx app/backend/server.ts",
+    "dev:backend": "nodemon app/backend/server.ts --exec tsx",
     "frontend:Build": "cd app/MyStore && ng build",
     "test:backend": "curl --retry 5 --retry-delay 3 --retry-connrefused http://localhost:3000/api/products",
-    "ci:backend": "npm run start:backend & npm run test:backend && kill $!"
-
+    "ci:backend": "npm run start:backend & npm run test:backend && kill $!",
+    "dev": "concurrently \"npm run dev:backend\" \"npm run start:frontend\""
   },
   "dependencies": {
+    "@nestjs/typeorm": "^11.0.0",
     "cors": "^2.8.5",
     "dockerize": "^0.1.0",
     "dotenv": "^16.4.7",
     "express": "^4.18.2",
-    "mongoose": "^8.0.3"
+    "fs-extra": "^11.3.0",
+    "mongoose": "^8.0.3",
+    "pg": "^8.14.0",
+    "pg-hstore": "^2.3.4",
+    "reflect-metadata": "^0.2.2",
+    "sequelize": "^6.37.6",
+    "sequelize-typescript": "^2.1.6",
+    "typeorm": "^0.3.21"
   },
   "devDependencies": {
     "@types/cors": "^2.8.17",
     "@types/express": "^4.17.21",
-    "@types/node": "^20.10.5",
+    "@types/node": "^20.17.24",
+    "@types/sequelize": "^4.28.20",
+    "concurrently": "^8.2.2",
     "nodemon": "^3.0.2",
     "tsx": "^4.7.0",
     "typescript": "^5.3.3"
