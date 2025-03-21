@@ -2,18 +2,17 @@ import { Injectable } from '@angular/core';
 import { BehaviorSubject } from 'rxjs';
 import { Product } from '../modules/product';
 
-/**
- * Simple cart service without localStorage
- */
+interface CartItem {
+  product: Product;
+  quantity: number;
+}
+
 @Injectable({
   providedIn: 'root',
 })
 export class CartService {
-  // In-memory cart items
-  private cartItems: any[] = [];
-
-  // Observable for components to subscribe to
-  private cartSubject = new BehaviorSubject<any[]>([]);
+  private cartItems: CartItem[] = [];
+  private cartSubject = new BehaviorSubject<CartItem[]>([]);
   public items$ = this.cartSubject.asObservable();
 
   constructor() {}
@@ -38,7 +37,6 @@ export class CartService {
 
     // Update observers
     this.cartSubject.next([...this.cartItems]);
-    console.log('Cart updated:', this.cartItems);
   }
 
   // Remove item from cart

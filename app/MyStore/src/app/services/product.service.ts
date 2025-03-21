@@ -7,30 +7,22 @@ import { Product } from '../modules/product';
   providedIn: 'root',
 })
 export class ProductService {
-  // Dynamic API URL that works in both development and production
+  // Dynamic API URL that works in both development and production  // Dynamic API URL that works in both development and production
   private apiUrl = window.location.hostname === 'localhost' 
-    ? 'http://localhost:3000/api'  // Development 
-    : '/api';  // Production (relative URL)
-
+  ? 'http://localhost:3000/api'  
+  : '/api';
+  
   constructor(private http: HttpClient) {}
 
   getProducts(): Observable<Product[]> {
     return this.http.get<Product[]>(`${this.apiUrl}/products`).pipe(
-      switchMap((products) => {  // here sometimes the backend don't send data
-        // so if the database is empty the backend is useless
-        // and if it empty the website will be empty so i made another way to get data
-        // from static json file not from Mongo database
-        // the data is the same in the two ways so it will work
+      switchMap((products) => {
         if (products && products.length > 0) {
           return of(products);
         }
-        console.log('No products found in database, loading from JSON file');
         return this.http.get<Product[]>('assets/Nike.Nike.json');
       }),
-      catchError((error) => {
-        console.error('API call failed:', error);
-        return this.http.get<Product[]>('assets/Nike.Nike.json');
-      })
+      catchError(() => this.http.get<Product[]>('assets/Nike.Nike.json'))
     );
   }
 
@@ -43,10 +35,7 @@ export class ProductService {
   }
 
   updateProduct(product: Product): Observable<void> {
-    return this.http.put<void>(
-      `${this.apiUrl}/products/${product.id}`,
-      product
-    );
+    return this.http.put<void>(`${this.apiUrl}/products/${product.id}`, product);
   }
 
   deleteProduct(id: number): Observable<void> {
