@@ -8,6 +8,12 @@ import { Product } from '../modules/product';
 import { FirstImagePipe } from '../pipes/first-image.pipe';
 import { CheckoutForm } from '../modules/checkout-form';
 
+// Define interface to match cart items structure
+interface CartItem {
+  product: Product;
+  quantity: number;
+}
+
 @Component({
   selector: 'app-cart',
   standalone: true,
@@ -16,7 +22,8 @@ import { CheckoutForm } from '../modules/checkout-form';
   styleUrls: ['./cart.component.css'],
 })
 export class CartComponent implements OnInit {
-  items$: Observable<Product[]>;
+  // Update type to match what CartService provides
+  items$: Observable<CartItem[]>;
   total: number = 0;
 
   product?: Product;
@@ -35,34 +42,36 @@ export class CartComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    // Optional: Calculate the total for display purposes
+    // Update to use product property from cart item
     this.items$.subscribe((items) => {
-      this.total = items.reduce((sum, item) => sum + item.price * (item.quantity || 1), 0);
+      this.total = items.reduce(
+        (sum, item) => sum + Number(item.product.price) * item.quantity, 
+        0
+      );
     });
   }
 
-  removeFromCart(item: Product): void {
+  removeFromCart(item: CartItem): void {
     this.cartService.removeItem(item);
 
     this.showNotification = true;
-    this.notificationMessage = `Removed  ${item.name} from the cart`;
+    this.notificationMessage = `Removed ${item.product.name} from the cart`;
 
-  setTimeout(() => {
-    this.showNotification = false;
-  }, 3000);
+    setTimeout(() => {
+      this.showNotification = false;
+    }, 3000);
   }
 
-  updateQuantity(item: Product): void {
+  updateQuantity(item: CartItem): void {
     this.cartService.updateItemQuantity(item);
   }
 
   async onSubmit(): Promise<void> {
     try {
-      // Get the latest cart items (to solve the total confirmation error that happened)
       const items = await firstValueFrom(this.items$);
 
       this.form.total = items.reduce(
-        (sum, item) => sum + item.price * (item.quantity || 1),
+        (sum, item) => sum + Number(item.product.price) * item.quantity,
         0
       );
 
@@ -70,7 +79,6 @@ export class CartComponent implements OnInit {
         state: { orderDetails: this.form },
       });
 
-      // Clear the cart
       this.cartService.clearCart();
     } catch (error) {
       console.error('Error during submission:', error);

@@ -92,38 +92,76 @@ dataSource
         
         // Process products to ensure consistent format for frontend
         const formattedProducts = products.map(product => {
+          // Debug log to see raw data from database
+          console.log(`Raw product ${product.id} images:`, product.images);
+          
           // Convert PostgreSQL array to JavaScript array if needed
-          let processedImages = product.images;
+          let processedImages: any = product.images || [];
           
           // Handle different possible formats from the database
-          if (typeof processedImages === 'string' && processedImages.startsWith('{') && processedImages.endsWith('}')) {
-            // Parse PostgreSQL array format '{url1,url2}' to JavaScript array
-            processedImages = processedImages.substring(1, processedImages.length - 1).split(',');
+          if (typeof processedImages === 'string') {
+            processedImages = processedImages.replace(/[{}"]/g, '').split(',');
           }
           
-          // Ensure the images array is properly formatted with valid URLs
+          // Join split Nike URLs (pattern observed in the data)
+          const combinedImages: string[] = [];
           if (Array.isArray(processedImages)) {
-            // Process each image URL to ensure it's valid
-            processedImages = processedImages.map(img => {
-              // Remove any quotes or whitespace
-              let cleanUrl = img.trim().replace(/^["']|["']$/g, '');
-              
-              // Check if it's a valid URL or a relative path
-              if (!cleanUrl.startsWith('http') && !cleanUrl.startsWith('/')) {
-                // Try to convert it to an absolute URL if it seems to be a Nike path
-                if (cleanUrl.includes('nike') || cleanUrl.includes('static.nike.com')) {
-                  cleanUrl = `https://${cleanUrl.replace(/^\/\//, '')}`;
+            for (let i = 0; i < processedImages.length; i++) {
+              let img = processedImages[i];
+              if (typeof img === 'string') {
+                // If the current element ends with '/f_auto' and there's a next element, 
+                // combine them as a single URL
+                if (img.trim().endsWith('/f_auto') && i + 1 < processedImages.length) {
+                  const nextPart = processedImages[i + 1];
+                  if (typeof nextPart === 'string' && nextPart.trim().startsWith('q_auto')) {
+                    combinedImages.push(`${img}/${nextPart}`);
+                    i++; // Skip the next element since we've used it
+                    continue;
+                  }
                 }
+                combinedImages.push(img);
               }
-              
-              console.log(`Processed image URL: ${cleanUrl}`);
-              return cleanUrl;
-            });
+            }
           }
+          
+          // Ensure we have valid image URLs
+          const finalImages = combinedImages.map(img => {
+            if (!img || typeof img !== 'string') return '';
+            
+            // Basic URL cleanup
+            let cleanUrl = img.trim();
+            
+            // Some images might be relative URLs needing a prefix
+            if (cleanUrl.startsWith('//')) {
+              return `https:${cleanUrl}`;
+            } else if (cleanUrl.startsWith('static.nike.com')) {
+              return `https://${cleanUrl}`;
+            } else if (!cleanUrl.startsWith('http')) {
+              // Check if it's a path fragment that should be attached to a domain
+              if (cleanUrl.startsWith('q_auto') || 
+                  cleanUrl.includes('/dri-fit') || 
+                  cleanUrl.includes('.png') || 
+                  cleanUrl.includes('.jpg')) {
+                return `https://static.nike.com/a/images/${cleanUrl}`;
+              }
+              // For any non-URL format, use a fallback
+              return '';
+            }
+            
+            return cleanUrl;
+          }).filter(url => url !== '');
+          
+          // If we end up with no valid images, provide a fallback
+          if (finalImages.length === 0) {
+            finalImages.push('https://static.nike.com/a/images/c_limit,w_592,f_auto/t_product_v1/e6da41fa-1be4-4ce5-b89c-22be4f1f02d4/air-force-1-07-mens-shoes-jBrhbr.png');
+          }
+          
+          // Log the processed images
+          console.log(`Processed images for product ${product.id}:`, finalImages);
           
           return {
             ...product,
-            images: processedImages || [] // Ensure it's never undefined
+            images: finalImages
           };
         });
         
