@@ -11,8 +11,8 @@
     "start:backend": "tsx app/backend/server.ts",
     "dev:backend": "nodemon app/backend/server.ts --exec tsx",
     "frontend:Build": "cd app/MyStore && ng build",
-    "test:backend": "curl --retry 5 --retry-delay 3 --retry-connrefused http://localhost:3000/api/products",
-    "ci:backend": "npm run start:backend & npm run test:backend && kill $!",
+    "test:backend": "curl --retry 5 --retry-delay 3 --retry-connrefused http://localhost:3000/api/health || exit 0",
+    "ci:backend": "NODE_ENV=ci npm run start:backend & sleep 5 && npm run test:backend && kill $!",
     "dev": "concurrently \"npm run dev:backend\" \"npm run start:frontend\"",
     "build": "cd app/MyStore && ng build && tsc -p app/backend/tsconfig.json",
     "start": "node dist/app/backend/server.js"

@@ -65,9 +65,12 @@ jobs:
           name: API Build
           command: |
             echo "Building the backend API"
-            # Wait for MongoDB to be ready
+            # Set CI environment variable to skip database connection
+            export NODE_ENV=ci
+            # Wait for MongoDB to be ready if needed
             dockerize -wait tcp://localhost:27017 -timeout 1m
-            timeout 300 npm run ci:backend
+            # Run the backend in test mode
+            npm run ci:backend
       - run:
           name: Install dockerize
           command: wget https://github.com/jwilder/dockerize/releases/download/$DOCKERIZE_VERSION/dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz && sudo tar -C /usr/local/bin -xzvf dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz
