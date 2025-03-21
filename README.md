@@ -21,7 +21,7 @@
 ## Running the Website:
         npm install
 ---
-        npm run serve     
+        npm run dev     
 ### To run the backend (port 3000) -not necessary-:
         npm run dev:backend
 ### To run the frontend (port 4200):

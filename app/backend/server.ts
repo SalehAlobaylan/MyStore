@@ -2,27 +2,20 @@ import "reflect-metadata";
 import { DataSource } from "typeorm";
 import express from "express";
 import cors from "cors";
-import fs from "fs";
 import path from "path";
 import { Product } from "./database/models/product.entity";
 import * as dotenv from "dotenv";
 
-// Load environment variables with explicit path
+// Load environment variables
 const envPath = path.resolve(process.cwd(), "app/backend/.env");
-console.log(`Loading .env file from: ${envPath}`);
 dotenv.config({ path: envPath });
 
 const app = express();
 const port = process.env.PORT || 3000;
+const isCI = process.env.NODE_ENV === "ci";
+const isProd = process.env.NODE_ENV === "production";
 
-// Debug environment variables
-console.log("Environment Variables:");
-console.log(`POSTGRES_HOST: ${process.env.POSTGRES_HOST}`);
-console.log(`POSTGRES_PORT: ${process.env.POSTGRES_PORT}`);
-console.log(`POSTGRES_DB: ${process.env.POSTGRES_DB}`);
-console.log(`POSTGRES_USERNAME: ${process.env.POSTGRES_USERNAME}`);
-console.log(`Using password: ${process.env.POSTGRES_PASSWORD ? "Yes" : "No"}`);
-
+// CORS setup
 app.use(
   cors({
     allowedHeaders: [
@@ -43,43 +36,46 @@ app.use(
 );
 app.use(express.json());
 
-// Add health check endpoint for CI testing
+// Health check endpoint for CI testing
 app.get("/api/health", (req, res) => {
   res.status(200).json({ status: "ok" });
 });
 
 // Serve static files in production
-if (process.env.NODE_ENV === 'production') {
-  // Path to Angular build output
-  const staticPath = path.join(__dirname, '../../../dist/MyStore');
-  console.log(`Serving static files from: ${staticPath}`);
-  
-  // Serve static files
+if (isProd) {
+  const staticPath = path.join(__dirname, "../../../dist/MyStore");
   app.use(express.static(staticPath));
-  
+
   // Serve index.html for any non-API routes
-  app.get('*', (req, res) => {
-    if (!req.path.startsWith('/api')) {
-      res.sendFile(path.join(staticPath, 'index.html'));
+  app.get("*", (req, res) => {
+    if (!req.path.startsWith("/api")) {
+      res.sendFile(path.join(staticPath, "index.html"));
     }
   });
 }
 
 // Skip database connection in CI environment
-const isCI = process.env.NODE_ENV === 'ci';
 if (isCI) {
   console.log("Running in CI environment - skipping database connection");
-  
+
   // Mock API response for testing
   app.get("/api/products", (req, res) => {
-    res.json([{ id: 1, name: "Test Product", price: 99.99, images: ["test.jpg"], description: "Test description" }]);
+    res.json([
+      {
+        id: 1,
+        name: "Test Product",
+        price: 99.99,
+        images: ["test.jpg"],
+        description: "Test description",
+      },
+    ]);
   });
-  
+
   app.listen(port, () => {
     console.log(`Server running in CI mode at http://localhost:${port}`);
   });
 } else {
-  // Configure TypeORM connection using DataSource
+  // Configure TypeORM connection
   const dataSource = new DataSource({
     type: "postgres",
     host: process.env.POSTGRES_HOST,
@@ -88,17 +84,11 @@ if (isCI) {
     password: process.env.POSTGRES_PASSWORD,
     database: process.env.POSTGRES_DB,
     entities: [Product],
-    synchronize: false, // Change to false to prevent schema modifications
-    ssl: {
-      rejectUnauthorized: false,
-    },
+    synchronize: false,
+    ssl: { rejectUnauthorized: false },
     extra: {
-      ssl: {
-        require: true,
-        rejectUnauthorized: false,
-      },
+      ssl: { require: true, rejectUnauthorized: false },
     },
-    // Add connection timeout options
     connectTimeoutMS: 10000,
   });
 
@@ -107,12 +97,10 @@ if (isCI) {
     .then(() => {
       console.log("Connected to PostgreSQL successfully");
 
-      // API Endpoints
+      // Products API
       app.get("/api/products", async (req, res) => {
         try {
           const productRepository = dataSource.getRepository(Product);
-          console.log("Attempting to query products table...");
-
           const products = await productRepository
             .createQueryBuilder("product")
             .select([
@@ -124,29 +112,23 @@ if (isCI) {
             ])
             .getMany();
 
-          console.log(`Successfully retrieved ${products.length} products`);
-
-          // Process products to ensure consistent format for frontend
+          // Process products to ensure consistent format
           const formattedProducts = products.map((product) => {
-            // Debug log to see raw data from database
-            console.log(`Raw product ${product.id} images:`, product.images);
-
-            // Convert PostgreSQL array to JavaScript array if needed
             let processedImages: any = product.images || [];
 
-            // Handle different possible formats from the database
+            // Handle different possible formats
             if (typeof processedImages === "string") {
-              processedImages = processedImages.replace(/[{}"]/g, "").split(",");
+              processedImages = processedImages
+                .replace(/[{}"]/g, "")
+                .split(",");
             }
 
-            // Join split Nike URLs (pattern observed in the data)
+            // Process and combine image URLs
             const combinedImages: string[] = [];
             if (Array.isArray(processedImages)) {
               for (let i = 0; i < processedImages.length; i++) {
                 let img = processedImages[i];
                 if (typeof img === "string") {
-                  // If the current element ends with '/f_auto' and there's a next element,
-                  // combine them as a single URL
                   if (
                     img.trim().endsWith("/f_auto") &&
                     i + 1 < processedImages.length
@@ -157,7 +139,7 @@ if (isCI) {
                       nextPart.trim().startsWith("q_auto")
                     ) {
                       combinedImages.push(`${img}/${nextPart}`);
-                      i++; // Skip the next element since we've used it
+                      i++;
                       continue;
                     }
                   }
@@ -166,21 +148,19 @@ if (isCI) {
               }
             }
 
-            // Ensure we have valid image URLs
+            // Ensure valid image URLs
             const finalImages = combinedImages
               .map((img) => {
                 if (!img || typeof img !== "string") return "";
 
-                // Basic URL cleanup
                 let cleanUrl = img.trim();
 
-                // Some images might be relative URLs needing a prefix
+                // Fix URL format
                 if (cleanUrl.startsWith("//")) {
                   return `https:${cleanUrl}`;
                 } else if (cleanUrl.startsWith("static.nike.com")) {
                   return `https://${cleanUrl}`;
                 } else if (!cleanUrl.startsWith("http")) {
-                  // Check if it's a path fragment that should be attached to a domain
                   if (
                     cleanUrl.startsWith("q_auto") ||
                     cleanUrl.includes("/dri-fit") ||
@@ -189,48 +169,30 @@ if (isCI) {
                   ) {
                     return `https://static.nike.com/a/images/${cleanUrl}`;
                   }
-                  // For any non-URL format, use a fallback
                   return "";
                 }
-
                 return cleanUrl;
               })
               .filter((url) => url !== "");
 
-            // If we end up with no valid images, provide a fallback
+            // Add fallback if no images
             if (finalImages.length === 0) {
               finalImages.push(
                 "https://static.nike.com/a/images/c_limit,w_592,f_auto/t_product_v1/e6da41fa-1be4-4ce5-b89c-22be4f1f02d4/air-force-1-07-mens-shoes-jBrhbr.png"
               );
             }
 
-            // Log the processed images
-            console.log(
-              `Processed images for product ${product.id}:`,
-              finalImages
-            );
-
-            return {
-              ...product,
-              images: finalImages,
-            };
+            return { ...product, images: finalImages };
           });
-
-          // Log the first product to see the structure
-          if (formattedProducts.length > 0) {
-            console.log(
-              "Sample product:",
-              JSON.stringify(formattedProducts[0], null, 2)
-            );
-          }
 
           res.json(formattedProducts);
         } catch (error) {
-          console.error("Database error when fetching products:", error);
+          console.error("Database error:", error);
           res.status(500).json({ error: "Error fetching products" });
         }
       });
 
+      // Single product API
       app.get("/api/products/:id", async (req, res) => {
         try {
           const productId = Number(req.params.id);
@@ -256,14 +218,6 @@ if (isCI) {
       });
     })
     .catch((error) => {
-      console.error("TypeORM connection error: ", error);
-      console.error("Connection details used:");
-      console.error(`Host: ${process.env.POSTGRES_HOST}`);
-      console.error(`Port: ${process.env.POSTGRES_PORT}`);
-      console.error(`Database: ${process.env.POSTGRES_DB}`);
-      console.error(`Username: ${process.env.POSTGRES_USERNAME}`);
-      console.error(
-        `Password provided: ${process.env.POSTGRES_PASSWORD ? "Yes" : "No"}`
-      );
+      console.error("Database connection error:", error);
     });
 }
