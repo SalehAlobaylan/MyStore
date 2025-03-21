@@ -1,10 +1,11 @@
 <div class="cart">
   <h2>Your Cart</h2>
+  <!-- Ensure we're accessing product properties correctly -->
   <div *ngFor="let item of items$ | async" class="cart-item">
-    <img [src]="item.images | firstImage" [alt]="item.name" />
+    <img [src]="item.product.images | firstImage" [alt]="item.product.name" />
     <div class="cart-item-details">
-      <h3>{{ item.name }}</h3>
-      <p>{{ item.price | currency }}</p>
+      <h3>{{ item.product.name }}</h3>
+      <p>{{ item.product.price | currency }}</p>
       <select
         [(ngModel)]="item.quantity"
         (ngModelChange)="updateQuantity(item)"

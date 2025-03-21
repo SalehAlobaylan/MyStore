@@ -5,48 +5,28 @@ import { Pipe, PipeTransform } from '@angular/core';
   standalone: true
 })
 export class FirstImagePipe implements PipeTransform {
+  // Default Nike image as fallback
+  private defaultImage = 'https://static.nike.com/a/images/c_limit,w_592,f_auto/t_product_v1/e6da41fa-1be4-4ce5-b89c-22be4f1f02d4/air-force-1-07-mens-shoes-jBrhbr.png';
+  
   transform(imageUrls: string | string[]): string {
+    // Handle null or undefined
     if (!imageUrls) {
-      return 'assets/placeholder.jpg';
-    }
-
-    // If imageUrls is an array, process the first item
-    if (Array.isArray(imageUrls)) {
-      if (imageUrls.length === 0) return 'assets/placeholder.jpg';
-      
-      const firstUrl = this.fixImageUrl(imageUrls[0]);
-      console.log('Using image URL:', firstUrl);
-      return firstUrl;
-    }
-
-    // Handle string type
-    try {
-      const urls = imageUrls.split(',');
-      if (urls.length === 0) return 'assets/placeholder.jpg';
-      
-      const firstUrl = this.fixImageUrl(urls[0].trim());
-      console.log('Using image URL from string:', firstUrl);
-      return firstUrl;
-    } catch (error) {
-      console.error('Error processing image URL:', error);
-      return 'assets/placeholder.jpg';
-    }
-  }
-
-  private fixImageUrl(url: string): string {
-    if (!url) return 'assets/placeholder.jpg';
-    
-    // Clean the URL (remove quotes, trim whitespace)
-    let cleanUrl = url.trim().replace(/^["']|["']$/g, '');
-    
-    // Fix common URL issues
-    if (cleanUrl.startsWith('//')) {
-      cleanUrl = 'https:' + cleanUrl;
-    } else if (!cleanUrl.startsWith('http') && !cleanUrl.startsWith('/') && !cleanUrl.startsWith('assets/')) {
-      // Assume it's a relative path to Nike assets if it doesn't have a protocol
-      cleanUrl = 'https://' + cleanUrl;
+      return this.defaultImage;
     }
     
-    return cleanUrl || 'assets/placeholder.jpg';
+    // Convert to array if it's a string
+    const images = Array.isArray(imageUrls) 
+      ? imageUrls 
+      : imageUrls.split(',').map(url => url.trim());
+    
+    // Find the first valid URL
+    for (const url of images) {
+      if (url && typeof url === 'string' && url.trim().length > 0) {
+        return url.trim();
+      }
+    }
+    
+    // Default fallback
+    return this.defaultImage;
   }
 }
