@@ -37,15 +37,15 @@ jobs:
             echo $(node --version)
             echo "NPM --version" 
             echo $(npm --version)
-            echo "it was 'cd app/MyStore && npm install'"
-            npm run frontend:install
+            echo "Installing frontend dependencies"
+            cd app/MyStore && npm install
             sleep 5
       # Install dependencies in the backend API
       - run:
           name: Install API Dependencies
           command: |
             echo "Installing backend dependencies"
-            npm run backend:install
+            npm install
             sleep 5
       # Lint the frontend
       # - run:
@@ -88,18 +88,15 @@ jobs:
           name: Deploy App
           command: |
             echo "Installing and building applications"
-            # Install dependencies
-            npm run backend:install
-            npm run frontend:install
+            # Install dependencies directly
+            npm install
+            cd app/MyStore && npm install && cd ../..
 
             # Build applications
-            # cd .. && 
-            npm run build:backend
-            frontend:Build
+            npm run build
 
             # Deploy to AWS
             echo "Deploying applications to AWS"
-            # eb deploy MyStore-env
             eb deploy mystoreEB-dev
 workflows:
   Mystore:

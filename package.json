@@ -3,8 +3,9 @@
   "version": "1.0.0",
   "type": "module",
   "scripts": {
-    "backend:install": "npm install",
+    "backend:install": "echo 'Installing backend dependencies'",
     "frontend:install": "cd app/MyStore && npm install",
+    "install:all": "npm install && cd app/MyStore && npm install",
     "start:frontend": "cd app/MyStore && ng serve",
     "serve": "npm run start:frontend",
     "start:backend": "tsx app/backend/server.ts",
@@ -14,8 +15,7 @@
     "ci:backend": "npm run start:backend & npm run test:backend && kill $!",
     "dev": "concurrently \"npm run dev:backend\" \"npm run start:frontend\"",
     "build": "cd app/MyStore && ng build && tsc -p app/backend/tsconfig.json",
-    "start": "node dist/app/backend/server.js",
-    "postinstall": "npm run backend:install && npm run frontend:install"
+    "start": "node dist/app/backend/server.js"
   },
   "dependencies": {
     "@nestjs/typeorm": "^11.0.0",
