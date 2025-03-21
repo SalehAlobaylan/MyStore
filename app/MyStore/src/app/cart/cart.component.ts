@@ -29,7 +29,7 @@ export class CartComponent implements OnInit {
   product?: Product;
   showNotification = false;
   notificationMessage = '';
-  
+
   form: CheckoutForm = {
     fullName: '',
     address: '',
@@ -45,7 +45,7 @@ export class CartComponent implements OnInit {
     // Update to use product property from cart item
     this.items$.subscribe((items) => {
       this.total = items.reduce(
-        (sum, item) => sum + Number(item.product.price) * item.quantity, 
+        (sum, item) => sum + Number(item.product.price) * item.quantity,
         0
       );
     });

@@ -7,9 +7,10 @@ import { Product } from '../modules/product';
   providedIn: 'root',
 })
 export class ProductService {
-  private apiUrl = 'http://localhost:3000/api'; // Backend API URL if the data came from backend
-  // private apiUrl = 'mystoredb.cqc8bwsn9skh.us-east-1.rds.amazonaws.com/api'; // backend API is hosted on Elastic Beanstalk
-
+  // Dynamic API URL that works in both development and production
+  private apiUrl = window.location.hostname === 'localhost' 
+    ? 'http://localhost:3000/api'  // Development 
+    : '/api';  // Production (relative URL)
 
   constructor(private http: HttpClient) {}
 

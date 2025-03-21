@@ -13,7 +13,7 @@ export class Product {
 
   // This is the critical part - the format depends on how data is stored in PostgreSQL
   // If stored as text[], TypeORM should handle the conversion
-  @Column("text", { array: true, nullable: true }) 
+  @Column("text", { array: true, nullable: true })
   images?: string[];
 
   @Column("text", { nullable: true })

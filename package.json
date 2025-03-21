@@ -12,7 +12,10 @@
     "frontend:Build": "cd app/MyStore && ng build",
     "test:backend": "curl --retry 5 --retry-delay 3 --retry-connrefused http://localhost:3000/api/products",
     "ci:backend": "npm run start:backend & npm run test:backend && kill $!",
-    "dev": "concurrently \"npm run dev:backend\" \"npm run start:frontend\""
+    "dev": "concurrently \"npm run dev:backend\" \"npm run start:frontend\"",
+    "build": "cd app/MyStore && ng build && tsc -p app/backend/tsconfig.json",
+    "start": "node dist/app/backend/server.js",
+    "postinstall": "npm run backend:install && npm run frontend:install"
   },
   "dependencies": {
     "@nestjs/typeorm": "^11.0.0",

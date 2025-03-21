@@ -18,18 +18,15 @@
         <option [value]="4">4</option>
         <option [value]="5">5</option>
       </select>
-      <button 
-          (click)="removeFromCart(item)"
-          class="remove-button"
-        >
-          Remove
-        </button>
-      </div>
+      <button (click)="removeFromCart(item)" class="remove-button">
+        Remove
+      </button>
     </div>
-    
-    <div *ngIf="showNotification" class="notification">
-      {{ notificationMessage }}
-    </div>
+  </div>
+
+  <div *ngIf="showNotification" class="notification">
+    {{ notificationMessage }}
+  </div>
   <div *ngIf="(items$ | async)?.length">
     <p class="total">Total: {{ total | currency }}</p>
 
