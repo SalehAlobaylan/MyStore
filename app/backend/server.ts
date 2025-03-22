@@ -10,25 +10,10 @@ import * as dotenv from "dotenv";
 const envPath = path.resolve(process.cwd(), "app/backend/.env");
 dotenv.config({ path: envPath });
 
-// Add more detailed logging at the beginning
-console.log(`Starting server in ${process.env.NODE_ENV || 'development'} mode`);
-console.log('Current directory:', process.cwd());
-console.log('Environment variables:', {
-  NODE_ENV: process.env.NODE_ENV,
-  PORT: process.env.PORT,
-  POSTGRES_HOST: process.env.POSTGRES_HOST ? '***' : 'not set',
-  POSTGRES_USERNAME: process.env.POSTGRES_USERNAME ? '***' : 'not set',
-  POSTGRES_DB: process.env.POSTGRES_DB ? '***' : 'not set'
-});
-
 const app = express();
-const port = process.env.PORT || 8080; // Changed to 8080 for Elastic Beanstalk
+const port = process.env.PORT || 3000;
 const isCI = process.env.NODE_ENV === "ci";
 const isProd = process.env.NODE_ENV === "production";
-
-// Add more debug logging
-console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
-console.log(`Server port: ${port}`);
 
 // CORS setup
 app.use(
@@ -107,7 +92,6 @@ if (isCI) {
     connectTimeoutMS: 10000,
   });
 
-  // Improve error handling for database connection
   dataSource
     .initialize()
     .then(() => {
@@ -235,22 +219,5 @@ if (isCI) {
     })
     .catch((error) => {
       console.error("Database connection error:", error);
-      // Start the server anyway in production to serve static files
-      if (isProd) {
-        app.listen(port, () => {
-          console.log(`Server running WITHOUT DATABASE at http://localhost:${port}`);
-        });
-      }
     });
 }
-
-// Error handling middleware
-app.use((err: any, req: any, res: any, next: any) => {
-  console.error('Unhandled error:', err);
-  res.status(500).json({ error: 'Server error', details: err.message });
-});
-
-// Add a catch-all route for debugging
-app.get('*', (req, res) => {
-  res.status(404).json({ error: 'Not found', path: req.path });
-});

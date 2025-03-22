@@ -1,24 +1,8 @@
-# Node modules
-node_modules/
-dist/
-
-# Environment files
+node_modules
+set_env.sh
 .env
-.env.local
-.env.*
-
+ormconfig.json
 # Elastic Beanstalk Files
 .elasticbeanstalk/*
-!.elasticbeanstalk/config.yml
 !.elasticbeanstalk/*.cfg.yml
 !.elasticbeanstalk/*.global.yml
-
-# Make sure no credentials are committed
-*.pem
-*.ppk
-*credentials*
-*aws-keys*
-
-# Build artifacts
-*.zip
-deploy.zip
