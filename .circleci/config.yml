@@ -1,88 +1,96 @@
 version: 2.1
 orbs:
-  node: circleci/node@5.1.0
+  node: circleci/node@5.0.2
   eb: circleci/aws-elastic-beanstalk@2.0.1
-  aws-cli: circleci/aws-cli@4.0.0
+  aws-cli: circleci/aws-cli@3.1.1
 
 jobs:
-  frontend:
-    working_directory: ~/app/MyStore/app/MyStore
-    executor: node/default
+  build:
+    docker:
+      - image: circleci/node:16
+      - image: mongo:6.0
+        environment:
+          MONGO_INITDB_ROOT_USERNAME: root
+          MONGO_INITDB_ROOT_PASSWORD: password123
+          MONGO_INITDB_DATABASE: Nike
+    environment:
+      MONGODB_URI: "mongodb://root:password123@localhost:27017/Nike?authSource=admin"
+      POSTGRES_HOST: mystoredb1.cqc8bwsn9skh.us-east-1.rds.amazonaws.com
+      POSTGRES_USERNAME: postgres
+      POSTGRES_PASSWORD: postgres927319
+      POSTGRES_DB: postgres
     steps:
-      - checkout:
-          path: ~/app/MyStore
       - node/install:
-          node-version: "20.11"
+          node-version: "20"
+      - checkout
       - run:
           name: Install Angular CLI
           command: npm install -g @angular/cli
       - run:
-          name: Install Package
-          command: npm install
-      - run:
-          name: Build
-          command: npm run build
-      - aws-cli/setup
-      - run:
-          name: Prepare for deployment
+          name: Install Front-End Dependencies
           command: |
-            mkdir -p ../../dist/frontend
-            cp -r dist/my-store/* ../../dist/frontend/
-
-  api:
-    working_directory: ~/app/MyStore
-    executor: node/default
-    steps:
-      - checkout:
-          path: ~/app/MyStore
-      - node/install:
-          node-version: "20.11"
+            echo "NODE --version" 
+            echo $(node --version)
+            echo "NPM --version" 
+            echo $(npm --version)
+            cd app/MyStore && npm install
       - run:
-          name: Install Package
+          name: Install API Dependencies
           command: npm install
       - run:
-          name: Build Backend
-          command: npx tsc -p app/backend/tsconfig.json
+          name: Front-End Build
+          command: npm run frontend:Build
+      - run:
+          name: API Build
+          command: |
+            dockerize -wait tcp://localhost:27017 -timeout 1m
+            npm run ci:backend
+      - run:
+          name: Install dockerize
+          command: |
+            wget https://github.com/jwilder/dockerize/releases/download/$DOCKERIZE_VERSION/dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz
+            sudo tar -C /usr/local/bin -xzvf dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz
+          environment:
+            DOCKERIZE_VERSION: v0.6.1
+
+  deploy:
+    docker:
+      - image: cimg/base:stable
+    steps:
+      - node/install:
+          node-version: "20"
+      - checkout
+      - aws-cli/setup
       - eb/setup
       - run:
-          name: Create deployment files
+          name: Deploy App
           command: |
-            # Create Procfile
-            echo "web: npm start" > Procfile
+            # Install AWS CLI v2
+            curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+            unzip awscliv2.zip
+            sudo ./aws/install
             
-            # Create necessary directories
-            mkdir -p .ebextensions
-            
-            # Create basic configuration
-            echo 'option_settings:' > .ebextensions/01_nodecommand.config
-            echo '  aws:elasticbeanstalk:container:nodejs:' >> .ebextensions/01_nodecommand.config
-            echo '    NodeCommand: "npm start"' >> .ebextensions/01_nodecommand.config
-            echo '  aws:elasticbeanstalk:application:environment:' >> .ebextensions/01_nodecommand.config
-            echo '    NODE_ENV: production' >> .ebextensions/01_nodecommand.config
-            echo '    PORT: 8081' >> .ebextensions/01_nodecommand.config
-      - run:
-          name: Deploy
-          command: |
-            # Copy frontend files
-            mkdir -p dist/app/MyStore
-            cp -r dist/frontend/* dist/app/MyStore/
-            
-            # Deploy to Elastic Beanstalk
-            eb use MyStore-dev
-            eb deploy MyStore-dev
+            # Configure deployment
+            eb deploy MyStore-dev \
+              --timeout 30 \
+              --envvars \
+                POSTGRES_HOST=$POSTGRES_HOST \
+                POSTGRES_USERNAME=$POSTGRES_USERNAME \
+                POSTGRES_PASSWORD=$POSTGRES_PASSWORD \
+                POSTGRES_DB=$POSTGRES_DB \
+                NODE_ENV=production
 
 workflows:
-  mystore:
+  Mystore:
     jobs:
-      - frontend:
-          filters:
-            branches:
-              only:
-                - master
-      - api:
+      - build
+      - hold:
+          type: approval
           requires:
-            - frontend
+            - build
           filters:
             branches:
-              only:
-                - master
+              only: master
+      - deploy:
+          requires:
+            - hold
