@@ -12,87 +12,91 @@ jobs:
       - run:
           name: Install dependencies
           command: |
-            npm install
+            npm install -g @angular/cli typescript
             cd app/MyStore && npm install && cd ../..
-      - run:
+      - run:me: Install dependencies
           name: Build application
-          command: |
-            # Build Angular frontend
-            cd app/MyStore && ng build --configuration=production && cd ../..
-            
-            # Compile TypeScript files
-            tsc -p app/backend/tsconfig.json
-            
+          command: |all
+            # Build Angular frontend using npxstall && cd ../..
+            cd app/MyStore && npx ng build --configuration=production && cd ../..
+            me: Build application
+            # Compile TypeScript files using npx
+            npx tsc -p app/backend/tsconfig.json
+            cd app/MyStore && npx ng build --configuration=production && cd ../..
             # Create dist directory for deployment
-            mkdir -p dist/app/MyStore
+            mkdir -p dist/app/MyStores
             cp -r app/MyStore/dist/my-store/* dist/app/MyStore/
       - persist_to_workspace:
-          root: .
-          paths:
-            - dist
-            - node_modules
+          root: .ate dist directory for deployment
+          paths:r -p dist/app/MyStore
+            - distapp/MyStore/dist/my-store/* dist/app/MyStore/
+            - node_modulesce:
             - package.json
             - package-lock.json
             - Procfile
             - .ebextensions
-
-  deploy:
-    docker:
+            - package.json
+  deploy:   - package-lock.json
+    docker: - Procfile
       - image: cimg/python:3.9-node
     steps:
       - checkout
       - attach_workspace:
-          at: .
+          at: .cimg/python:3.9-node
       - aws-cli/setup
-      - run:
+      - run:kout
           name: Install EB CLI
           command: pip install awsebcli
-      - run:
+      - run:cli/setup
           name: Create deployment files
-          command: |
+          command: |all EB CLI
             # Create Procfile if doesn't exist
             echo "web: npm start" > Procfile
-            
+            me: Create deployment files
             # Ensure .ebextensions directory exists
-            mkdir -p .ebextensions
-            
+            mkdir -p .ebextensionsoesn't exist
+            echo "web: npm start" > Procfile
             # Create nodecommand.config using individual echo commands instead of heredoc
             echo "option_settings:" > .ebextensions/01_nodecommand.config
             echo "  aws:elasticbeanstalk:container:nodejs:" >> .ebextensions/01_nodecommand.config
             echo "    NodeCommand: \"npm start\"" >> .ebextensions/01_nodecommand.config
             echo "  aws:elasticbeanstalk:application:environment:" >> .ebextensions/01_nodecommand.config
             echo "    NODE_ENV: production" >> .ebextensions/01_nodecommand.config
-            echo "    PORT: 8081" >> .ebextensions/01_nodecommand.config
+            echo "    PORT: 8081" >> .ebextensions/01_nodecommand.configions/01_nodecommand.config
             echo "    POSTGRES_HOST: ${POSTGRES_HOST}" >> .ebextensions/01_nodecommand.config
-            echo "    POSTGRES_USERNAME: ${POSTGRES_USERNAME}" >> .ebextensions/01_nodecommand.config
+            echo "    POSTGRES_USERNAME: ${POSTGRES_USERNAME}" >> .ebextensions/01_nodecommand.confignfig
             echo "    POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}" >> .ebextensions/01_nodecommand.config
             echo "    POSTGRES_DB: ${POSTGRES_DB}" >> .ebextensions/01_nodecommand.config
-            
-            # Create zip file
-            zip -r "deploy.zip" dist package.json package-lock.json Procfile .ebextensions
-      - run:
+            echo "    POSTGRES_HOST: ${POSTGRES_HOST}" >> .ebextensions/01_nodecommand.config
+            # Create zip fileS_USERNAME: ${POSTGRES_USERNAME}" >> .ebextensions/01_nodecommand.config
+            zip -r "deploy.zip" dist package.json package-lock.json Procfile .ebextensionsmand.config
+      - run:echo "    POSTGRES_DB: ${POSTGRES_DB}" >> .ebextensions/01_nodecommand.config
           name: Deploy to Elastic Beanstalk
-          command: |
-            # Upload zip to S3
+          command: | zip file
+            # Upload zip to S3" dist package.json package-lock.json Procfile .ebextensions
             aws s3 cp deploy.zip s3://elasticbeanstalk-us-east-1-204546021765/deploy-${CIRCLE_BUILD_NUM}.zip
-            
+            me: Deploy to Elastic Beanstalk
             # Create version
             aws elasticbeanstalk create-application-version \
-              --application-name MyStore \
+              --application-name MyStore \ticbeanstalk-us-east-1-204546021765/deploy-${CIRCLE_BUILD_NUM}.zip
               --version-label mystore-${CIRCLE_BUILD_NUM} \
               --source-bundle S3Bucket="elasticbeanstalk-us-east-1-204546021765",S3Key="deploy-${CIRCLE_BUILD_NUM}.zip"
-            
-            # Deploy version
-            aws elasticbeanstalk update-environment \
-              --environment-name MyStore-dev \
+            aws elasticbeanstalk create-application-version \
+            # Deploy versionname MyStore \
+            aws elasticbeanstalk update-environment \NUM} \
+              --environment-name MyStore-dev \cbeanstalk-us-east-1-204546021765",S3Key="deploy-${CIRCLE_BUILD_NUM}.zip"
               --version-label mystore-${CIRCLE_BUILD_NUM}
-
-workflows:
-  deploy-workflow:
-    jobs:
+            # Deploy version
+workflows:  aws elasticbeanstalk update-environment \
+  deploy-workflow:vironment-name MyStore-dev \
+    jobs:     --version-label mystore-${CIRCLE_BUILD_NUM}
       - build
       - deploy:
           requires:
+            - build
+          filters:
+            branches:
+              only: master
             - build
           filters:
             branches:
