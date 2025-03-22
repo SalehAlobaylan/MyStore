@@ -12,7 +12,7 @@
     "start:backend": "tsx app/backend/server.ts",
     
     "build": "cd app/MyStore && ng build && tsc -p app/backend/tsconfig.json",
-    "frontend:Build": "cd app/MyStore && npm install @angular-devkit/build-angular && ng build",
+    "frontend:Build": "cd app/MyStore && npm install --legacy-peer-deps && ng build",
     
     "dev": "concurrently \"npm run dev:backend\" \"npm run start:frontend\"",
     "dev:backend": "nodemon app/backend/server.ts --exec tsx",
