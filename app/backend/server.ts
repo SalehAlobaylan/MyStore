@@ -11,9 +11,13 @@ const envPath = path.resolve(process.cwd(), "app/backend/.env");
 dotenv.config({ path: envPath });
 
 const app = express();
-const port = process.env.PORT || 3000;
+const port = process.env.PORT || 8080; // Changed to 8080 for Elastic Beanstalk
 const isCI = process.env.NODE_ENV === "ci";
 const isProd = process.env.NODE_ENV === "production";
+
+// Add more debug logging
+console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
+console.log(`Server port: ${port}`);
 
 // CORS setup
 app.use(
@@ -221,3 +225,9 @@ if (isCI) {
       console.error("Database connection error:", error);
     });
 }
+
+// Error handling middleware
+app.use((err: any, req: any, res: any, next: any) => {
+  console.error('Unhandled error:', err);
+  res.status(500).send('Server error');
+});

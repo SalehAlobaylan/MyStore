@@ -7,12 +7,13 @@
     "frontend:install": "cd app/MyStore && npm install",
     "install:all": "npm install && cd app/MyStore && npm install",
     
-    "start": "node dist/app/backend/server.js",
+    "start": "NODE_ENV=production node dist/app/backend/server.js",
     "start:frontend": "cd app/MyStore && ng serve",
     "start:backend": "tsx app/backend/server.ts",
     
-    "build": "cd app/MyStore && ng build && tsc -p app/backend/tsconfig.json",
+    "build": "cd app/MyStore && ng build && cd ../.. && tsc -p app/backend/tsconfig.json && npm run copy-env",
     "frontend:Build": "cd app/MyStore && ng build",
+    "copy-env": "cp .env dist/ || copy .env dist\\",
     
     "dev": "concurrently \"npm run dev:backend\" \"npm run start:frontend\"",
     "dev:backend": "nodemon app/backend/server.ts --exec tsx",
@@ -40,5 +41,8 @@
     "nodemon": "^3.0.2",
     "tsx": "^4.7.0",
     "typescript": "^5.3.3"
+  },
+  "engines": {
+    "node": "20.x"
   }
 }

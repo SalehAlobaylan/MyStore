@@ -65,20 +65,21 @@ jobs:
       - run:
           name: Deploy App
           command: |
-            # Install AWS CLI v2
-            curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
-            unzip awscliv2.zip
-            sudo ./aws/install
+            # Install dependencies and build
+            npm install
+            cd app/MyStore && npm install && cd ../..
+            npm run build
             
-            # Configure deployment
-            eb deploy MyStore-dev \
-              --timeout 30 \
-              --envvars \
-                POSTGRES_HOST=$POSTGRES_HOST \
-                POSTGRES_USERNAME=$POSTGRES_USERNAME \
-                POSTGRES_PASSWORD=$POSTGRES_PASSWORD \
-                POSTGRES_DB=$POSTGRES_DB \
-                NODE_ENV=production
+            # Create the .ebextensions directory if it doesn't exist
+            mkdir -p .ebextensions
+            
+            # Archive for deployment
+            zip -r "deploy.zip" . -x "node_modules/*" "app/MyStore/node_modules/*"
+            
+            # Deploy to Elastic Beanstalk
+            eb deploy MyStore-dev --timeout 30 \
+              --staged \
+              --envvars NODE_ENV=production,PORT=8080,POSTGRES_HOST=$POSTGRES_HOST,POSTGRES_USERNAME=$POSTGRES_USERNAME,POSTGRES_PASSWORD=$POSTGRES_PASSWORD,POSTGRES_DB=$POSTGRES_DB
 
 workflows:
   Mystore:
