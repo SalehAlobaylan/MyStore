@@ -52,8 +52,7 @@ global:
 # ERROR: The current user does not have the correct permissions. Reason: Operation Denied. The security token included in the request is invalid.
 # You have not yet set up your credentials or your credentials are incorrect
 # You must provide your credentials.
-# (aws-access-id): AKIAS7H7ETGC6G57V7B6
-# (aws-secret-key): 4jinQGw95E5H2jo2NgDBtoa+gXcsNHyJeU9KHTX8
+
 
 # Select an application to use
 # 1) mystoreEB
