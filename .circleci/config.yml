@@ -1,7 +1,6 @@
 version: 2.1
 orbs:
   node: circleci/node@5.0.2
-  eb: circleci/aws-elastic-beanstalk@2.0.1
   aws-cli: circleci/aws-cli@3.1.1
 
 jobs:
@@ -55,52 +54,98 @@ jobs:
 
   deploy:
     docker:
-      - image: cimg/node:20.6
+      - image: cimg/python:3.9-node
     steps:
       - checkout
+      - aws-cli/setup:
+          profile-name: default
       - run:
-          name: Install EB CLI
+          name: Install AWS EB CLI
           command: |
-            sudo apt-get update
-            sudo apt-get install -y python3-pip
-            sudo pip3 install awsebcli
+            pip install awsebcli
+            eb --version
       - run:
-          name: Configure AWS
-          command: |
-            mkdir -p ~/.aws
-            echo "[default]" > ~/.aws/config
-            echo "region = us-east-1" >> ~/.aws/config
-            echo "[default]" > ~/.aws/credentials
-            echo "aws_access_key_id = ${AWS_ACCESS_KEY_ID}" >> ~/.aws/credentials
-            echo "aws_secret_access_key = ${AWS_SECRET_ACCESS_KEY}" >> ~/.aws/credentials
-      - run:
-          name: Build app
+          name: Build application
           command: |
             npm install
             cd app/MyStore && npm install && cd ../..
             npm run build
       - run:
-          name: Deploy to Elastic Beanstalk
+          name: Create deployment package
           command: |
-            # Create necessary files for deployment
-            echo "Creating Procfile and config files"
+            # Create necessary configuration files
             echo "web: npm start" > Procfile
-            
-            # Ensure .ebextensions exists
+            echo "Creating .ebextensions directory"
             mkdir -p .ebextensions
             
-            # Create config file - fixed YAML syntax by replacing heredoc with echo statements
-            echo 'option_settings:' > .ebextensions/01_nodecommand.config
-            echo '  aws:elasticbeanstalk:container:nodejs:' >> .ebextensions/01_nodecommand.config
-            echo '    NodeCommand: "npm start"' >> .ebextensions/01_nodecommand.config
-            echo '  aws:elasticbeanstalk:application:environment:' >> .ebextensions/01_nodecommand.config
-            echo '    NODE_ENV: production' >> .ebextensions/01_nodecommand.config
-            echo '    PORT: 8080' >> .ebextensions/01_nodecommand.config
+            # Create NodeCommand configuration
+            cat > .ebextensions/01_nodecommand.config << 'EOF'
+            option_settings:
+              aws:elasticbeanstalk:container:nodejs:
+                NodeCommand: "npm start"
+              aws:elasticbeanstalk:application:environment:
+                NODE_ENV: production
+                PORT: 8080
+            EOF
             
-            # Deploy to EB
-            eb use MyStore-dev
-            eb deploy --staged --timeout 30 \
-              --env-vars PORT=8080,NODE_ENV=production,POSTGRES_HOST=$POSTGRES_HOST,POSTGRES_USERNAME=$POSTGRES_USERNAME,POSTGRES_PASSWORD=$POSTGRES_PASSWORD,POSTGRES_DB=$POSTGRES_DB
+            # Create logs configuration
+            cat > .ebextensions/02_logs.config << 'EOF'
+            files:
+              "/opt/elasticbeanstalk/tasks/taillogs.d/nodejs.conf":
+                mode: "000755"
+                owner: root
+                group: root
+                content: |
+                  /var/log/nodejs/nodejs.log
+                  /var/log/nginx/error.log
+                  /var/log/nginx/access.log
+                  /var/log/eb-engine.log
+            commands:
+              01_create_log_dir:
+                command: mkdir -p /var/log/nodejs
+              02_change_permissions:
+                command: chmod 777 /var/log/nodejs
+            EOF
+            
+            # Create a deployment zip file
+            zip -r "deploy.zip" . -x "node_modules/*" "app/MyStore/node_modules/*" ".git/*"
+      - run:
+          name: Deploy to Elastic Beanstalk
+          command: |
+            # Check AWS configuration
+            aws configure list
+            
+            # Initialize EB application if needed (this won't override existing apps)
+            echo "Configuring EB CLI"
+            mkdir -p ~/.elasticbeanstalk
+            
+            # Configure EB CLI
+            cat > ~/.elasticbeanstalk/config.yml << 'EOF'
+            branch-defaults:
+              master:
+                environment: MyStore-dev
+            global:
+              application_name: MyStore
+              default_region: us-east-1
+            EOF
+            
+            # Deploy the application using the AWS CLI directly
+            echo "Starting deployment to EB"
+            aws elasticbeanstalk create-application-version \
+              --application-name MyStore \
+              --version-label "circleci-${CIRCLE_BUILD_NUM}" \
+              --source-bundle S3Bucket="elasticbeanstalk-us-east-1-204546021765",S3Key="deploy.zip" \
+              --auto-create-application
+
+            # Upload zip to S3
+            aws s3 cp deploy.zip s3://elasticbeanstalk-us-east-1-204546021765/deploy.zip
+            
+            # Update environment with new version
+            aws elasticbeanstalk update-environment \
+              --environment-name MyStore-dev \
+              --version-label "circleci-${CIRCLE_BUILD_NUM}"
+            
+            echo "Deployment triggered, check EB console for status"
 
 workflows:
   Mystore:
