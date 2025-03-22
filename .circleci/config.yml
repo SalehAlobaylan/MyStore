@@ -62,45 +62,41 @@ jobs:
             # Create .ebextensions directory
             mkdir -p .ebextensions
             
-            # Create nginx config to fix 502 errors
+            # Create nginx config to fix 502 errors using individual echo commands
             echo "Creating nginx config..."
-            cat > .ebextensions/01_nginx.config << EOL
-            files:
-              "/etc/nginx/conf.d/proxy.conf":
-                mode: "000644"
-                owner: root
-                group: root
-                content: |
-                  upstream nodejs {
-                    server 127.0.0.1:8081;
-                    keepalive 256;
-                  }
-                  server {
-                    listen 8080;
-                    server_name localhost;
-                    location / {
-                      proxy_pass http://nodejs;
-                      proxy_http_version 1.1;
-                      proxy_set_header Upgrade \$http_upgrade;
-                      proxy_set_header Connection "upgrade";
-                      proxy_set_header Host \$host;
-                      proxy_set_header X-Real-IP \$remote_addr;
-                      proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
-                      proxy_cache_bypass \$http_upgrade;
-                    }
-                  }
-            EOL
+            echo 'files:' > .ebextensions/01_nginx.config
+            echo '  "/etc/nginx/conf.d/proxy.conf":' >> .ebextensions/01_nginx.config
+            echo '    mode: "000644"' >> .ebextensions/01_nginx.config
+            echo '    owner: root' >> .ebextensions/01_nginx.config
+            echo '    group: root' >> .ebextensions/01_nginx.config
+            echo '    content: |' >> .ebextensions/01_nginx.config
+            echo '      upstream nodejs {' >> .ebextensions/01_nginx.config
+            echo '        server 127.0.0.1:8081;' >> .ebextensions/01_nginx.config
+            echo '        keepalive 256;' >> .ebextensions/01_nginx.config
+            echo '      }' >> .ebextensions/01_nginx.config
+            echo '      server {' >> .ebextensions/01_nginx.config
+            echo '        listen 8080;' >> .ebextensions/01_nginx.config
+            echo '        server_name localhost;' >> .ebextensions/01_nginx.config
+            echo '        location / {' >> .ebextensions/01_nginx.config
+            echo '          proxy_pass http://nodejs;' >> .ebextensions/01_nginx.config
+            echo '          proxy_http_version 1.1;' >> .ebextensions/01_nginx.config
+            echo '          proxy_set_header Upgrade $http_upgrade;' >> .ebextensions/01_nginx.config
+            echo '          proxy_set_header Connection "upgrade";' >> .ebextensions/01_nginx.config
+            echo '          proxy_set_header Host $host;' >> .ebextensions/01_nginx.config
+            echo '          proxy_set_header X-Real-IP $remote_addr;' >> .ebextensions/01_nginx.config
+            echo '          proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;' >> .ebextensions/01_nginx.config
+            echo '          proxy_cache_bypass $http_upgrade;' >> .ebextensions/01_nginx.config
+            echo '        }' >> .ebextensions/01_nginx.config
+            echo '      }' >> .ebextensions/01_nginx.config
             
-            # Create node command config
+            # Create node command config using individual echo commands
             echo "Creating node command config..."
-            cat > .ebextensions/02_nodecommand.config << EOL
-            option_settings:
-              aws:elasticbeanstalk:container:nodejs:
-                NodeCommand: "npm start"
-              aws:elasticbeanstalk:application:environment:
-                NODE_ENV: production
-                PORT: 8081
-            EOL
+            echo 'option_settings:' > .ebextensions/02_nodecommand.config
+            echo '  aws:elasticbeanstalk:container:nodejs:' >> .ebextensions/02_nodecommand.config
+            echo '    NodeCommand: "npm start"' >> .ebextensions/02_nodecommand.config
+            echo '  aws:elasticbeanstalk:application:environment:' >> .ebextensions/02_nodecommand.config
+            echo '    NODE_ENV: production' >> .ebextensions/02_nodecommand.config
+            echo '    PORT: 8081' >> .ebextensions/02_nodecommand.config
             
             # Create deployment zip
             echo "Creating deployment zip..."
@@ -115,25 +111,23 @@ jobs:
             echo "Installing EB CLI..."
             pip install awsebcli --user
             
-            # Initialize EB CLI
+            # Initialize EB CLI with individual echo commands instead of heredoc
             mkdir -p ~/.elasticbeanstalk
-            cat > ~/.elasticbeanstalk/config.yml << EOL
-            branch-defaults:
-              default:
-                environment: MyStore-dev
-            global:
-              application_name: MyStore
-              default_ec2_keyname: null
-              default_platform: Node.js 20
-              default_region: us-east-1
-              sc: git
-            EOL
+            echo 'branch-defaults:' > ~/.elasticbeanstalk/config.yml
+            echo '  default:' >> ~/.elasticbeanstalk/config.yml
+            echo '    environment: MyStore-dev' >> ~/.elasticbeanstalk/config.yml
+            echo 'global:' >> ~/.elasticbeanstalk/config.yml
+            echo '  application_name: MyStore' >> ~/.elasticbeanstalk/config.yml
+            echo '  default_ec2_keyname: null' >> ~/.elasticbeanstalk/config.yml
+            echo '  default_platform: Node.js 20' >> ~/.elasticbeanstalk/config.yml
+            echo '  default_region: us-east-1' >> ~/.elasticbeanstalk/config.yml
+            echo '  sc: git' >> ~/.elasticbeanstalk/config.yml
             
             # List EB environments to confirm connection
             echo "Listing EB environments..."
             aws elasticbeanstalk describe-environments --application-name MyStore --query "Environments[].{Name:EnvironmentName,Status:Status,Health:Health}" --output table
             
-            # Upload to S3 directly
+            # Upload to S3 directly 
             echo "Uploading to S3..."
             TIMESTAMP=$(date +%Y%m%d%H%M%S)
             S3_KEY="deploy-${TIMESTAMP}.zip"
