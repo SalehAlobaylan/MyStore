@@ -3,6 +3,7 @@ import { DataSource } from "typeorm";
 import express from "express";
 import cors from "cors";
 import path from "path";
+import fs from "fs";
 import { Product } from "./database/models/product.entity";
 import * as dotenv from "dotenv";
 
@@ -11,7 +12,7 @@ const envPath = path.resolve(process.cwd(), "app/backend/.env");
 dotenv.config({ path: envPath });
 
 const app = express();
-const port = process.env.PORT || 3000;
+const port = process.env.PORT || 8081;
 const isCI = process.env.NODE_ENV === "ci";
 const isProd = process.env.NODE_ENV === "production";
 
@@ -43,15 +44,35 @@ app.get("/api/health", (req, res) => {
 
 // Serve static files in production
 if (isProd) {
-  const staticPath = path.join(__dirname, "../../../dist/MyStore");
-  app.use(express.static(staticPath));
+  // Try looking for files in different possible locations
+  const possiblePaths = [
+    path.join(__dirname, "../../../dist/MyStore"),
+    path.join(__dirname, "../../MyStore"),
+    path.join(__dirname, "../MyStore"),
+    path.join(__dirname, "../../../app/MyStore/dist/my-store"),
+  ];
 
-  // Serve index.html for any non-API routes
-  app.get("*", (req, res) => {
-    if (!req.path.startsWith("/api")) {
-      res.sendFile(path.join(staticPath, "index.html"));
+  let staticPath = "";
+  for (const p of possiblePaths) {
+    if (fs.existsSync(p)) {
+      staticPath = p;
+      console.log(`Using static files from: ${staticPath}`);
+      break;
     }
-  });
+  }
+
+  if (staticPath) {
+    app.use(express.static(staticPath));
+
+    // Serve index.html for any non-API routes
+    app.get("*", (req, res) => {
+      if (!req.path.startsWith("/api")) {
+        res.sendFile(path.join(staticPath, "index.html"));
+      }
+    });
+  } else {
+    console.warn("No static files directory found");
+  }
 }
 
 // Skip database connection in CI environment

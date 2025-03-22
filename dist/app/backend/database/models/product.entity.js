@@ -1,3 +1,4 @@
+"use strict";
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
@@ -7,31 +8,33 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
-import { Entity, PrimaryGeneratedColumn, Column } from "typeorm";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.Product = void 0;
+const typeorm_1 = require("typeorm");
 let Product = class Product {
 };
+exports.Product = Product;
 __decorate([
-    PrimaryGeneratedColumn(),
+    (0, typeorm_1.PrimaryGeneratedColumn)(),
     __metadata("design:type", Number)
 ], Product.prototype, "id", void 0);
 __decorate([
-    Column({ type: "text", nullable: true }),
+    (0, typeorm_1.Column)({ type: "text", nullable: true }),
     __metadata("design:type", String)
 ], Product.prototype, "name", void 0);
 __decorate([
-    Column({ type: "numeric", nullable: true }),
+    (0, typeorm_1.Column)({ type: "numeric", nullable: true }),
     __metadata("design:type", Number)
 ], Product.prototype, "price", void 0);
 __decorate([
-    Column("text", { array: true, nullable: true }),
+    (0, typeorm_1.Column)("text", { array: true, nullable: true }),
     __metadata("design:type", Array)
 ], Product.prototype, "images", void 0);
 __decorate([
-    Column("text", { nullable: true }),
+    (0, typeorm_1.Column)("text", { nullable: true }),
     __metadata("design:type", String)
 ], Product.prototype, "description", void 0);
-Product = __decorate([
-    Entity("products")
+exports.Product = Product = __decorate([
+    (0, typeorm_1.Entity)("products")
 ], Product);
-export { Product };
 //# sourceMappingURL=product.entity.js.map
