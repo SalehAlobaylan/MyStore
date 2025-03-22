@@ -1,35 +1,31 @@
 version: 2.1
 orbs:
-  # orbs contain basic recipes and reproducible actions (install node, aws, etc.)
   node: circleci/node@5.0.2
   eb: circleci/aws-elastic-beanstalk@2.0.1
   aws-cli: circleci/aws-cli@3.1.1
-  # different jobs are called later in the workflows sections
+
 jobs:
   build:
     docker:
-      # the base image can run most needed actions with orbs
       - image: circleci/node:16
       - image: mongo:6.0
         environment:
           MONGO_INITDB_ROOT_USERNAME: root
           MONGO_INITDB_ROOT_PASSWORD: password123
           MONGO_INITDB_DATABASE: Nike
-          POSTGRES_HOST: mystoredb1.cqc8bwsn9skh.us-east-1.rds.amazonaws.com
-          POSTGRES_USERNAME: postgres
-          POSTGRES_PASSWORD: postgres927319
-          POSTGRES_DB: postgres
     environment:
       MONGODB_URI: "mongodb://root:password123@localhost:27017/Nike?authSource=admin"
+      POSTGRES_HOST: mystoredb1.cqc8bwsn9skh.us-east-1.rds.amazonaws.com
+      POSTGRES_USERNAME: postgres
+      POSTGRES_PASSWORD: postgres927319
+      POSTGRES_DB: postgres
     steps:
-      # install node and checkout code
       - node/install:
           node-version: "20"
       - checkout
       - run:
           name: Install Angular CLI
           command: npm install -g @angular/cli
-      # Use root level package.json to install dependencies in the frontend app
       - run:
           name: Install Front-End Dependencies
           command: |
@@ -37,84 +33,64 @@ jobs:
             echo $(node --version)
             echo "NPM --version" 
             echo $(npm --version)
-            echo "Installing frontend dependencies"
             cd app/MyStore && npm install
-            sleep 5
-      # Install dependencies in the backend API
       - run:
           name: Install API Dependencies
-          command: |
-            echo "Installing backend dependencies"
-            npm install
-            sleep 5
-      # Lint the frontend
-      # - run:
-      #     name: Front-End Lint
-      #     command: |
-      #       echo "Running frontend linting"
-      #       cd MyStore && npm run lint
-
-      # Build the frontend app
+          command: npm install
       - run:
           name: Front-End Build
-          command: |
-            echo "Building the frontend app"
-            npm run frontend:Build
-      # Build the backend API
+          command: npm run frontend:Build
       - run:
           name: API Build
           command: |
-            echo "Building the backend API"
-            # Set CI environment variable to skip database connection
-            export NODE_ENV=ci
-            # Wait for MongoDB to be ready if needed
             dockerize -wait tcp://localhost:27017 -timeout 1m
-            # Run the backend in test mode
             npm run ci:backend
       - run:
           name: Install dockerize
-          command: wget https://github.com/jwilder/dockerize/releases/download/$DOCKERIZE_VERSION/dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz && sudo tar -C /usr/local/bin -xzvf dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz
+          command: |
+            wget https://github.com/jwilder/dockerize/releases/download/$DOCKERIZE_VERSION/dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz
+            sudo tar -C /usr/local/bin -xzvf dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz
           environment:
             DOCKERIZE_VERSION: v0.6.1
-  # deploy step will run only after manual approval
+
   deploy:
-  docker:
-    - image: "cimg/base:stable"
-  steps:
-    - node/install:
-        node-version: "20"
-    - eb/setup
-    - aws-cli/setup
-    - checkout
-    - run:
-        name: Deploy App
-        command: |
-          # Install AWS CLI v2
-          curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
-          unzip awscliv2.zip
-          sudo ./aws/install
-          
-          # Configure deployment
-          eb deploy MyStore-dev \
-            --timeout 30 \
-            --envvars \
-              POSTGRES_HOST=$POSTGRES_HOST \
-              POSTGRES_USERNAME=$POSTGRES_USERNAME \
-              POSTGRES_PASSWORD=$POSTGRES_PASSWORD \
-              POSTGRES_DB=$POSTGRES_DB \
-              NODE_ENV=production
+    docker:
+      - image: cimg/base:stable
+    steps:
+      - node/install:
+          node-version: "20"
+      - checkout
+      - aws-cli/setup
+      - eb/setup
+      - run:
+          name: Deploy App
+          command: |
+            # Install AWS CLI v2
+            curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+            unzip awscliv2.zip
+            sudo ./aws/install
+            
+            # Configure deployment
+            eb deploy MyStore-dev \
+              --timeout 30 \
+              --envvars \
+                POSTGRES_HOST=$POSTGRES_HOST \
+                POSTGRES_USERNAME=$POSTGRES_USERNAME \
+                POSTGRES_PASSWORD=$POSTGRES_PASSWORD \
+                POSTGRES_DB=$POSTGRES_DB \
+                NODE_ENV=production
+
 workflows:
   Mystore:
     jobs:
       - build
       - hold:
-          filters:
-            branches:
-              only:
-                - master
           type: approval
           requires:
             - build
+          filters:
+            branches:
+              only: master
       - deploy:
           requires:
             - hold
