@@ -6,22 +6,23 @@ orbs:
 jobs:
   build:
     docker:
-      - image: cimg/node:20.6
+      # Using a newer Node.js version compatible with Angular CLI requirements
+      - image: cimg/node:20.11.1
     steps:
       - checkout
       - run:
           name: Install dependencies
           command: |
-            npm install -g @angular/cli typescript
+            # Use npx instead of global installs
             npm install
             cd app/MyStore && npm install && cd ../..
       - run:
           name: Build application
           command: |
-            # Build Angular frontend
+            # Build Angular frontend using npx
             cd app/MyStore && npx ng build --configuration=production && cd ../..
             
-            # Compile TypeScript files
+            # Compile TypeScript files using npx
             npx tsc -p app/backend/tsconfig.json
             
             # Create dist directory for deployment
@@ -47,7 +48,8 @@ jobs:
       - aws-cli/setup
       - run:
           name: Install EB CLI
-          command: pip install awsebcli
+          command: |
+            sudo pip install awsebcli
       - run:
           name: Create deployment files
           command: |
