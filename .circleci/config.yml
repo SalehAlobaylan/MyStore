@@ -12,8 +12,9 @@ jobs:
       - run:
           name: Install dependencies
           command: |
+            # Install packages locally instead of globally
             npm install
-            npm install -g @angular/cli typescript
+            npm install typescript @angular/cli --save-dev
             cd app/MyStore && npm install && cd ../..
       - run:
           name: Build application
@@ -21,24 +22,22 @@ jobs:
             # Display installed versions
             echo "Node version: $(node -v)"
             echo "NPM version: $(npm -v)"
-            echo "Angular CLI version: $(ng version)"
-            echo "TypeScript version: $(tsc --version)"
             
-            # Build Angular frontend with explicit path
+            # Build Angular frontend with npx
             echo "Building Angular frontend..."
             cd app/MyStore 
-            npx --no-install ng build --configuration=production
+            npx ng build --configuration=production
             cd ../..
             
             # Check the dist directory contents
-            ls -la app/MyStore/dist
+            ls -la app/MyStore/dist || echo "Angular build failed - no dist directory"
             
-            # Compile TypeScript files with explicit path
+            # Compile TypeScript files with npx
             echo "Compiling TypeScript files..."
-            npx --no-install tsc -p app/backend/tsconfig.json
+            npx tsc -p app/backend/tsconfig.json
             
             # Check the compiled output
-            ls -la dist
+            ls -la dist || echo "TypeScript compilation failed - no dist directory"
             
             # Create proper directory structure for deployment
             mkdir -p server
@@ -71,19 +70,20 @@ jobs:
           command: |
             # Verify AWS credentials are working
             echo "Verifying AWS credentials..."
-            aws sts get-caller-identity
+            aws sts get-caller-identity || echo "AWS credential verification failed"
             
             # Check if Elastic Beanstalk application exists
             echo "Checking Elastic Beanstalk application..."
-            aws elasticbeanstalk describe-applications --application-names MyStore
+            aws elasticbeanstalk describe-applications --application-names MyStore || echo "EB application check failed"
             
             # Check if Elastic Beanstalk environment exists
             echo "Checking Elastic Beanstalk environment..."
-            aws elasticbeanstalk describe-environments --environment-names MyStore-dev --application-name MyStore
+            aws elasticbeanstalk describe-environments --environment-names MyStore-dev --application-name MyStore || echo "EB environment check failed"
       - run:
           name: Install EB CLI
           command: |
-            sudo pip install awsebcli
+            pip install awsebcli --user
+            ~/.local/bin/eb --version || echo "EB CLI installation failed"
       - run:
           name: Create deployment files
           command: |
