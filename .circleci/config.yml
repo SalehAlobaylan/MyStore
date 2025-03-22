@@ -77,30 +77,32 @@ jobs:
           environment:
             DOCKERIZE_VERSION: v0.6.1
   # deploy step will run only after manual approval
-  deploy:
-    docker:
-      - image: "cimg/base:stable"
-      # more setup needed for aws, node, elastic beanstalk
-    steps:
-      - node/install:
-          node-version: "20"
-      - eb/setup
-      - aws-cli/setup
-      - checkout
-      - run:
-          name: Deploy App
-          command: |
-            echo "Installing and building applications"
-            # Install dependencies directly
-            npm install
-            cd app/MyStore && npm install && cd ../..
-
-            # Build applications
-            npm run build
-
-            # Deploy to AWS
-            echo "Deploying applications to AWS"
-            eb deploy MyStore-dev
+deploy:
+  docker:
+    - image: "cimg/base:stable"
+  steps:
+    - node/install:
+        node-version: "20"
+    - eb/setup
+    - aws-cli/setup
+    - checkout
+    - run:
+        name: Deploy App
+        command: |
+          # Install AWS CLI v2
+          curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+          unzip awscliv2.zip
+          sudo ./aws/install
+          
+          # Configure deployment
+          eb deploy MyStore-dev \
+            --timeout 30 \
+            --envvars \
+              POSTGRES_HOST=$POSTGRES_HOST \
+              POSTGRES_USERNAME=$POSTGRES_USERNAME \
+              POSTGRES_PASSWORD=$POSTGRES_PASSWORD \
+              POSTGRES_DB=$POSTGRES_DB \
+              NODE_ENV=production
 workflows:
   Mystore:
     jobs:
