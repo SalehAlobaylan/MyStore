@@ -1,6 +1,7 @@
 version: 2.1
 orbs:
   node: circleci/node@5.0.2
+  eb: circleci/aws-elastic-beanstalk@2.0.1
   aws-cli: circleci/aws-cli@3.1.1
 
 jobs:
@@ -54,112 +55,42 @@ jobs:
 
   deploy:
     docker:
-      - image: cimg/python:3.9-node
+      - image: cimg/base:stable
     steps:
+      - node/install:
+          node-version: "20"
       - checkout
-      - aws-cli/setup:
-          profile-name: default
+      - aws-cli/setup
+      - eb/setup
       - run:
-          name: Install AWS EB CLI
+          name: Deploy App
           command: |
-            pip install awsebcli
-            eb --version
-      - run:
-          name: Create environment file
-          command: |
-            # Create a basic .env file for the build process
-            echo "POSTGRES_HOST=${POSTGRES_HOST}" > .env
-            echo "POSTGRES_USERNAME=${POSTGRES_USERNAME}" >> .env
-            echo "POSTGRES_PASSWORD=${POSTGRES_PASSWORD}" >> .env
-            echo "POSTGRES_DB=${POSTGRES_DB}" >> .env
-            echo "POSTGRES_PORT=5432" >> .env
-            echo "NODE_ENV=production" >> .env
-      - run:
-          name: Build application
-          command: |
-            npm install
-            cd app/MyStore && npm install && cd ../..
-            npm run build
-      - run:
-          name: Create deployment package
-          command: |
-            # Create necessary configuration files
-            echo "web: npm start" > Procfile
-            echo "Creating .ebextensions directory"
-            mkdir -p .ebextensions
+            # Install AWS CLI v2
+            curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+            unzip awscliv2.zip
+            sudo ./aws/install
             
-            # Create NodeCommand configuration - Line by line to avoid heredoc
-            echo 'option_settings:' > .ebextensions/01_nodecommand.config
-            echo '  aws:elasticbeanstalk:container:nodejs:' >> .ebextensions/01_nodecommand.config
-            echo '    NodeCommand: "npm start"' >> .ebextensions/01_nodecommand.config
-            echo '  aws:elasticbeanstalk:application:environment:' >> .ebextensions/01_nodecommand.config
-            echo '    NODE_ENV: production' >> .ebextensions/01_nodecommand.config
-            echo '    PORT: 8080' >> .ebextensions/01_nodecommand.config
-            echo '  aws:elasticbeanstalk:container:nodejs:staticfiles:' >> .ebextensions/01_nodecommand.config
-            echo '    /dist/MyStore: /dist/MyStore' >> .ebextensions/01_nodecommand.config
-            
-            # Create logs configuration - Line by line to avoid heredoc
-            echo 'files:' > .ebextensions/02_logs.config
-            echo '  "/opt/elasticbeanstalk/tasks/taillogs.d/nodejs.conf":' >> .ebextensions/02_logs.config
-            echo '    mode: "000755"' >> .ebextensions/02_logs.config
-            echo '    owner: root' >> .ebextensions/02_logs.config
-            echo '    group: root' >> .ebextensions/02_logs.config
-            echo '    content: |' >> .ebextensions/02_logs.config
-            echo '      /var/log/nodejs/nodejs.log' >> .ebextensions/02_logs.config
-            echo '      /var/log/nginx/error.log' >> .ebextensions/02_logs.config
-            echo '      /var/log/nginx/access.log' >> .ebextensions/02_logs.config
-            echo '      /var/log/eb-engine.log' >> .ebextensions/02_logs.config
-            echo 'commands:' >> .ebextensions/02_logs.config
-            echo '  01_create_log_dir:' >> .ebextensions/02_logs.config
-            echo '    command: mkdir -p /var/log/nodejs' >> .ebextensions/02_logs.config
-            echo '  02_change_permissions:' >> .ebextensions/02_logs.config
-            echo '    command: chmod 777 /var/log/nodejs' >> .ebextensions/02_logs.config
-            
-            # Create a deployment zip file
-            zip -r "deploy.zip" . -x "node_modules/*" "app/MyStore/node_modules/*" ".git/*"
-      - run:
-          name: Deploy to Elastic Beanstalk
-          command: |
-            # Check AWS configuration
-            aws configure list
-            
-            # Initialize EB application if needed
-            echo "Configuring EB CLI"
-            mkdir -p ~/.elasticbeanstalk
-            
-            # Configure EB CLI - Line by line to avoid heredoc
-            echo 'branch-defaults:' > ~/.elasticbeanstalk/config.yml
-            echo '  master:' >> ~/.elasticbeanstalk/config.yml
-            echo '    environment: MyStore-dev' >> ~/.elasticbeanstalk/config.yml
-            echo 'global:' >> ~/.elasticbeanstalk/config.yml
-            echo '  application_name: MyStore' >> ~/.elasticbeanstalk/config.yml
-            echo '  default_region: us-east-1' >> ~/.elasticbeanstalk/config.yml
-            
-            # Deploy using AWS CLI directly
-            echo "Starting deployment to EB"
-            aws elasticbeanstalk create-application-version \
-              --application-name MyStore \
-              --version-label "circleci-${CIRCLE_BUILD_NUM}" \
-              --source-bundle S3Bucket="elasticbeanstalk-us-east-1-204546021765",S3Key="deploy.zip" \
-              --auto-create-application
-
-            # Upload zip to S3
-            aws s3 cp deploy.zip s3://elasticbeanstalk-us-east-1-204546021765/deploy.zip
-            
-            # Update environment with new version
-            aws elasticbeanstalk update-environment \
-              --environment-name MyStore-dev \
-              --version-label "circleci-${CIRCLE_BUILD_NUM}"
-            
-            echo "Deployment triggered, check EB console for status"
+            # Configure deployment
+            eb deploy MyStore-dev \
+              --timeout 30 \
+              --envvars \
+                POSTGRES_HOST=$POSTGRES_HOST \
+                POSTGRES_USERNAME=$POSTGRES_USERNAME \
+                POSTGRES_PASSWORD=$POSTGRES_PASSWORD \
+                POSTGRES_DB=$POSTGRES_DB \
+                NODE_ENV=production
 
 workflows:
   Mystore:
     jobs:
       - build
-      - deploy:
+      - hold:
+          type: approval
           requires:
             - build
           filters:
             branches:
               only: master
+      - deploy:
+          requires:
+            - hold

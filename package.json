@@ -11,9 +11,8 @@
     "start:frontend": "cd app/MyStore && ng serve",
     "start:backend": "tsx app/backend/server.ts",
     
-    "build": "cd app/MyStore && ng build && cd ../.. && tsc -p app/backend/tsconfig.json",
+    "build": "cd app/MyStore && ng build && tsc -p app/backend/tsconfig.json",
     "frontend:Build": "cd app/MyStore && ng build",
-    "copy-env": "mkdir -p dist && touch dist/.env",
     
     "dev": "concurrently \"npm run dev:backend\" \"npm run start:frontend\"",
     "dev:backend": "nodemon app/backend/server.ts --exec tsx",
@@ -21,8 +20,7 @@
     "test:backend": "curl --retry 5 --retry-delay 3 --retry-connrefused http://localhost:3000/api/health || exit 0",
     "ci:backend": "NODE_ENV=ci npm run start:backend & sleep 5 && npm run test:backend && kill $!",
     
-    "serve": "npm run start:frontend",
-    "postinstall": "npm run build"
+    "serve": "npm run start:frontend"
   },
   "dependencies": {
     "@nestjs/typeorm": "^11.0.0",
@@ -32,8 +30,7 @@
     "pg": "^8.14.0",
     "pg-hstore": "^2.3.4",
     "reflect-metadata": "^0.2.2",
-    "typeorm": "^0.3.21",
-    "cross-env": "^7.0.3"
+    "typeorm": "^0.3.21"
   },
   "devDependencies": {
     "@types/cors": "^2.8.17",
@@ -43,8 +40,5 @@
     "nodemon": "^3.0.2",
     "tsx": "^4.7.0",
     "typescript": "^5.3.3"
-  },
-  "engines": {
-    "node": "20.x"
   }
 }
