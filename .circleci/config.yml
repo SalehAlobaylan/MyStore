@@ -65,6 +65,16 @@ jobs:
             pip install awsebcli
             eb --version
       - run:
+          name: Create environment file
+          command: |
+            # Create a basic .env file for the build process
+            echo "POSTGRES_HOST=${POSTGRES_HOST}" > .env
+            echo "POSTGRES_USERNAME=${POSTGRES_USERNAME}" >> .env
+            echo "POSTGRES_PASSWORD=${POSTGRES_PASSWORD}" >> .env
+            echo "POSTGRES_DB=${POSTGRES_DB}" >> .env
+            echo "POSTGRES_PORT=5432" >> .env
+            echo "NODE_ENV=production" >> .env
+      - run:
           name: Build application
           command: |
             npm install
