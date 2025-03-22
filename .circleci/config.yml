@@ -6,14 +6,12 @@ orbs:
 jobs:
   build:
     docker:
-      # Using a newer Node.js version compatible with Angular CLI requirements
       - image: cimg/node:20.11.1
     steps:
       - checkout
       - run:
           name: Install dependencies
           command: |
-            # Use npx instead of global installs
             npm install
             cd app/MyStore && npm install && cd ../..
       - run:
@@ -25,17 +23,21 @@ jobs:
             # Compile TypeScript files using npx
             npx tsc -p app/backend/tsconfig.json
             
-            # Create dist directory for deployment
-            mkdir -p dist/app/MyStore
-            cp -r app/MyStore/dist/my-store/* dist/app/MyStore/
+            # Create proper directory structure for deployment
+            mkdir -p server
+            cp -r dist server/
+            cp package.json server/
+            cp package-lock.json server/
+            
+            # Create startup script that works on AWS
+            echo "#!/bin/bash" > server/start.sh
+            echo "cd /var/app/current" >> server/start.sh
+            echo "node dist/app/backend/server.js" >> server/start.sh
+            chmod +x server/start.sh
       - persist_to_workspace:
           root: .
           paths:
-            - dist
-            - node_modules
-            - package.json
-            - package-lock.json
-            - Procfile
+            - server
             - .ebextensions
 
   deploy:
@@ -53,26 +55,30 @@ jobs:
       - run:
           name: Create deployment files
           command: |
-            # Create Procfile if doesn't exist
-            echo "web: npm start" > Procfile
+            # Create Procfile with bash command to avoid Windows path issues
+            echo "web: bash ./start.sh" > server/Procfile
             
             # Ensure .ebextensions directory exists
             mkdir -p .ebextensions
             
-            # Create nodecommand.config using individual echo commands
-            echo "option_settings:" > .ebextensions/01_nodecommand.config
-            echo "  aws:elasticbeanstalk:container:nodejs:" >> .ebextensions/01_nodecommand.config
-            echo "    NodeCommand: \"npm start\"" >> .ebextensions/01_nodecommand.config
-            echo "  aws:elasticbeanstalk:application:environment:" >> .ebextensions/01_nodecommand.config
-            echo "    NODE_ENV: production" >> .ebextensions/01_nodecommand.config
-            echo "    PORT: 8081" >> .ebextensions/01_nodecommand.config
-            echo "    POSTGRES_HOST: ${POSTGRES_HOST}" >> .ebextensions/01_nodecommand.config
-            echo "    POSTGRES_USERNAME: ${POSTGRES_USERNAME}" >> .ebextensions/01_nodecommand.config
-            echo "    POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}" >> .ebextensions/01_nodecommand.config
-            echo "    POSTGRES_DB: ${POSTGRES_DB}" >> .ebextensions/01_nodecommand.config
+            # Create nodecommand.config
+            cat > .ebextensions/01_nodecommand.config << 'EOF'
+            option_settings:
+              aws:elasticbeanstalk:container:nodejs:
+                NodeCommand: "bash ./start.sh"
+              aws:elasticbeanstalk:application:environment:
+                NODE_ENV: production
+                PORT: 8081
+            EOF
             
-            # Create zip file
-            zip -r "deploy.zip" dist package.json package-lock.json Procfile .ebextensions
+            # Copy .ebextensions to server directory
+            cp -r .ebextensions server/
+            
+            # Navigate to server directory to create zip using Linux paths
+            cd server
+            
+            # Create deployment zip with forward slashes only
+            zip -r "../deploy.zip" * .ebextensions -x "node_modules/*"
       - run:
           name: Deploy to Elastic Beanstalk
           command: |
