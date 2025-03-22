@@ -88,14 +88,14 @@ jobs:
             
             # Ensure .ebextensions exists
             mkdir -p .ebextensions
-            cat > .ebextensions/01_nodecommand.config << EOL
-            option_settings:
-              aws:elasticbeanstalk:container:nodejs:
-                NodeCommand: "npm start"
-              aws:elasticbeanstalk:application:environment:
-                NODE_ENV: production
-                PORT: 8080
-            EOL
+            
+            # Create config file - fixed YAML syntax by replacing heredoc with echo statements
+            echo 'option_settings:' > .ebextensions/01_nodecommand.config
+            echo '  aws:elasticbeanstalk:container:nodejs:' >> .ebextensions/01_nodecommand.config
+            echo '    NodeCommand: "npm start"' >> .ebextensions/01_nodecommand.config
+            echo '  aws:elasticbeanstalk:application:environment:' >> .ebextensions/01_nodecommand.config
+            echo '    NODE_ENV: production' >> .ebextensions/01_nodecommand.config
+            echo '    PORT: 8080' >> .ebextensions/01_nodecommand.config
             
             # Deploy to EB
             eb use MyStore-dev
