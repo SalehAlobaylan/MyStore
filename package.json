@@ -11,7 +11,7 @@
     "start:frontend": "cd app/MyStore && ng serve --proxy-config proxy.conf.json",
     "start:backend": "tsx app/backend/server.ts",
     
-    "build": "cd app/MyStore && ng build && cd ../.. && tsc -p app/backend/tsconfig.json && mkdir -p dist/app/MyStore && cp -r app/MyStore/dist/my-store/* dist/app/MyStore/",
+    "build": "cd app/MyStore && ng build && cd ../.. && npx tsc -p app/backend/tsconfig.json && mkdir -p dist/app/MyStore && cp -r app/MyStore/dist/my-store/* dist/app/MyStore/",
     "frontend:Build": "cd app/MyStore && ng build",
     "copy-dist-files": "mkdir -p dist/app/MyStore && cp -r app/MyStore/dist/my-store/* dist/app/MyStore/",
     
