@@ -1,0 +1,142 @@
+branch-defaults:
+  master:
+    environment: MyStore-dev
+    group_suffix: null
+global:
+  application_name: MyStore
+  branch: null
+  default_ec2_keyname: null
+  default_platform: Node.js 20
+  default_region: us-east-1
+  include_git_submodules: true
+  instance_profile: null
+  platform_name: null
+  platform_version: null
+  profile: null
+  repository: null
+  sc: git
+  workspace_type: Application
+
+
+# terminal eb init logs:
+
+
+# Select a default region
+# 1) us-east-1 : US East (N. Virginia)
+# 2) us-west-1 : US West (N. California)
+# 3) us-west-2 : US West (Oregon)
+# 4) eu-west-1 : EU (Ireland)
+# 5) eu-central-1 : EU (Frankfurt)
+# 6) ap-south-1 : Asia Pacific (Mumbai)
+# 7) ap-southeast-1 : Asia Pacific (Singapore)
+# 8) ap-southeast-2 : Asia Pacific (Sydney)
+# 9) ap-northeast-1 : Asia Pacific (Tokyo)
+# 10) ap-northeast-2 : Asia Pacific (Seoul)
+# 11) sa-east-1 : South America (Sao Paulo)
+# 12) cn-north-1 : China (Beijing)
+# 13) cn-northwest-1 : China (Ningxia)
+# 14) us-east-2 : US East (Ohio)
+# 15) ca-central-1 : Canada (Central)
+# 16) eu-west-2 : EU (London)
+# 17) eu-west-3 : EU (Paris)
+# 18) eu-north-1 : EU (Stockholm)
+# 19) eu-south-1 : EU (Milano)
+# 20) ap-east-1 : Asia Pacific (Hong Kong)
+# 21) me-south-1 : Middle East (Bahrain)
+# 22) af-south-1 : Africa (Cape Town)
+# 23) ap-southeast-3 : Asia Pacific (Jakarta)
+# 24) ap-northeast-3 : Asia Pacific (Osaka)
+# (default is 3): 1
+
+# ERROR: The current user does not have the correct permissions. Reason: Operation Denied. The security token included in the request is invalid.
+# ERROR: The current user does not have the correct permissions. Reason: Operation Denied. The security token included in the request is invalid.
+# You have not yet set up your credentials or your credentials are incorrect
+# You must provide your credentials.
+# (aws-access-id): AKIAS7H7ETGC6G57V7B6
+# (aws-secret-key): 4jinQGw95E5H2jo2NgDBtoa+gXcsNHyJeU9KHTX8
+
+# Select an application to use
+# 1) mystoreEB
+# 2) TestEB
+# 3) [ Create new Application ]
+# (default is 3): 3
+
+
+# Enter Application Name
+# (default is "MyStore"):
+# Application MyStore has been created.
+
+# It appears you are using Node.js. Is this correct?
+# (Y/n): Y
+# Select a platform branch.
+# 1) Node.js 22 running on 64bit Amazon Linux 2023
+# 2) Node.js 20 running on 64bit Amazon Linux 2023
+# 3) Node.js 18 running on 64bit Amazon Linux 2023
+# 4) Node.js 18 running on 64bit Amazon Linux 2
+# (default is 1): 2
+
+# Do you wish to continue with CodeCommit? (Y/n): n
+# Do you want to set up SSH for your instances?
+# (Y/n): n
+
+# (.ebcli-virtual-env) C:\Users\saleh\Desktop\MyStore>eb create --single --keyname mykeypair --instance-types t2.medium
+# Enter Environment Name
+# (default is MyStore-dev):
+# Enter DNS CNAME prefix
+# (default is MyStore-dev):
+
+# Would you like to enable Spot Fleet requests for this environment? (y/N): N
+# warning: in the working copy of 'app/backend/database/MongoDatabase.ts', LF will be replaced by CRLF the next time Git touches it
+# Creating application version archive "app-ee0d-250321_041209404134".
+# Uploading MyStore/app-ee0d-250321_041209404134.zip to S3. This may take a while.
+# Upload Complete.
+# ERROR: NotSupportedError - The EB CLI cannot find your SSH key file for keyname "mykeypair". Your SSH key file must be located in the .ssh folder in your home directory.
+
+# (.ebcli-virtual-env) C:\Users\saleh\Desktop\MyStore>eb create --single --keyname mykeypair --instance-types t2.medium
+# Enter Environment Name
+# (default is MyStore-dev):
+# Enter DNS CNAME prefix
+# (default is MyStore-dev):
+
+# Would you like to enable Spot Fleet requests for this environment? (y/N): N
+# warning: in the working copy of 'app/backend/database/MongoDatabase.ts', LF will be replaced by CRLF the next time Git touches it
+# Creating application version archive "app-ee0d-250321_041239601154".
+# Uploading MyStore/app-ee0d-250321_041239601154.zip to S3. This may take a while.
+# Upload Complete.
+# ERROR: NotSupportedError - The EB CLI cannot find your SSH key file for keyname "mykeypair". Your SSH key file must be located in the .ssh folder in your home directory.
+
+# (.ebcli-virtual-env) C:\Users\saleh\Desktop\MyStore>eb create --single --keyname dev --instance-types t2.medium
+# Enter Environment Name
+# (default is MyStore-dev):
+# Enter DNS CNAME prefix
+# (default is MyStore-dev):
+
+# Would you like to enable Spot Fleet requests for this environment? (y/N): N
+# warning: in the working copy of 'app/backend/database/MongoDatabase.ts', LF will be replaced by CRLF the next time Git touches it
+# Creating application version archive "app-ee0d-250321_044108972975".
+# Uploading MyStore/app-ee0d-250321_044108972975.zip to S3. This may take a while.
+# Upload Complete.
+# Environment details for: MyStore-dev
+#   Application name: MyStore
+#   Region: us-east-1
+#   Deployed Version: app-ee0d-250321_044108972975
+#   Environment ID: e-gzpmuf8buf
+#   Platform: arn:aws:elasticbeanstalk:us-east-1::platform/Node.js 20 running on 64bit Amazon Linux 2023/6.4.3
+#   Tier: WebServer-Standard-1.0
+#   CNAME: MyStore-dev.us-east-1.elasticbeanstalk.com
+#   Updated: 2025-03-21 01:41:15.600000+00:00
+# Printing Status:
+# 2025-03-21 01:41:14    INFO    createEnvironment is starting.
+# 2025-03-21 01:41:15    INFO    Using elasticbeanstalk-us-east-1-204546021765 as Amazon S3 storage bucket for environment data.
+# 2025-03-21 01:41:42    INFO    Created security group named: awseb-e-gzpmuf8buf-stack-AWSEBSecurityGroup-scRLtHlsOJWs
+# 2025-03-21 01:41:57    INFO    Created EIP: 3.214.35.16
+# 2025-03-21 01:42:13    INFO    Waiting for EC2 instances to launch. This may take a few minutes.
+# 2025-03-21 01:42:57    ERROR   Instance deployment failed to generate a 'Procfile' for Node.js. Provide one of these files: 'package.json', 'server.js', or 'app.js'. The deployment failed.
+# 2025-03-21 01:42:57    ERROR   Instance deployment failed. For details, see 'eb-engine.log'.
+# 2025-03-21 01:42:58    ERROR   [Instance: i-02a4bee9555216d19] Command failed on instance. Return code: 1 Output: Engine execution has encountered an error..
+# 2025-03-21 01:42:59    INFO    Command execution completed on all instances. Summary: [Successful: 0, Failed: 1].
+# 2025-03-21 01:44:02    ERROR   Create environment operation is complete, but with errors. For more information, see troubleshooting documentation.
+
+# ERROR: ServiceError - Create environment operation is complete, but with errors. For more information, see troubleshooting documentation.
+
+# (.ebcli-virtual-env) C:\Users\saleh\Desktop\MyStore>

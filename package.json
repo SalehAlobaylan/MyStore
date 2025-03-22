@@ -7,7 +7,7 @@
     "frontend:install": "cd app/MyStore && npm install",
     "install:all": "npm install && cd app/MyStore && npm install",
     
-    "start": "cross-env NODE_ENV=production node dist/app/backend/server.js",
+    "start": "node dist/app/backend/server.js",
     "start:frontend": "cd app/MyStore && ng serve",
     "start:backend": "tsx app/backend/server.ts",
     
@@ -21,7 +21,8 @@
     "test:backend": "curl --retry 5 --retry-delay 3 --retry-connrefused http://localhost:3000/api/health || exit 0",
     "ci:backend": "NODE_ENV=ci npm run start:backend & sleep 5 && npm run test:backend && kill $!",
     
-    "serve": "npm run start:frontend"
+    "serve": "npm run start:frontend",
+    "postinstall": "npm run build"
   },
   "dependencies": {
     "@nestjs/typeorm": "^11.0.0",
