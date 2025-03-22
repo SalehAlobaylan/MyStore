@@ -5,12 +5,19 @@ dist/
 # Environment files
 .env
 .env.local
+.env.*
 
 # Elastic Beanstalk Files
 .elasticbeanstalk/*
 !.elasticbeanstalk/config.yml
 !.elasticbeanstalk/*.cfg.yml
 !.elasticbeanstalk/*.global.yml
+
+# Make sure no credentials are committed
+*.pem
+*.ppk
+*credentials*
+*aws-keys*
 
 # Build artifacts
 *.zip
