@@ -56,19 +56,17 @@ jobs:
             # Ensure .ebextensions directory exists
             mkdir -p .ebextensions
             
-            # Create nodecommand.config
-            cat > .ebextensions/01_nodecommand.config << EOF
-            option_settings:
-              aws:elasticbeanstalk:container:nodejs:
-                NodeCommand: "npm start"
-              aws:elasticbeanstalk:application:environment:
-                NODE_ENV: production
-                PORT: 8081
-                POSTGRES_HOST: ${POSTGRES_HOST}
-                POSTGRES_USERNAME: ${POSTGRES_USERNAME}
-                POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-                POSTGRES_DB: ${POSTGRES_DB}
-            EOF
+            # Create nodecommand.config using individual echo commands instead of heredoc
+            echo "option_settings:" > .ebextensions/01_nodecommand.config
+            echo "  aws:elasticbeanstalk:container:nodejs:" >> .ebextensions/01_nodecommand.config
+            echo "    NodeCommand: \"npm start\"" >> .ebextensions/01_nodecommand.config
+            echo "  aws:elasticbeanstalk:application:environment:" >> .ebextensions/01_nodecommand.config
+            echo "    NODE_ENV: production" >> .ebextensions/01_nodecommand.config
+            echo "    PORT: 8081" >> .ebextensions/01_nodecommand.config
+            echo "    POSTGRES_HOST: ${POSTGRES_HOST}" >> .ebextensions/01_nodecommand.config
+            echo "    POSTGRES_USERNAME: ${POSTGRES_USERNAME}" >> .ebextensions/01_nodecommand.config
+            echo "    POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}" >> .ebextensions/01_nodecommand.config
+            echo "    POSTGRES_DB: ${POSTGRES_DB}" >> .ebextensions/01_nodecommand.config
             
             # Create zip file
             zip -r "deploy.zip" dist package.json package-lock.json Procfile .ebextensions
