@@ -15,7 +15,7 @@ jobs:
           MONGO_INITDB_ROOT_USERNAME: root
           MONGO_INITDB_ROOT_PASSWORD: password123
           MONGO_INITDB_DATABASE: Nike
-          POSTGRES_HOST: mystoredb.cqc8bwsn9skh.us-east-1.rds.amazonaws.com
+          POSTGRES_HOST: mystoredb1.cqc8bwsn9skh.us-east-1.rds.amazonaws.com
           POSTGRES_USERNAME: postgres
           POSTGRES_PASSWORD: postgres927319
           POSTGRES_DB: postgres
@@ -100,7 +100,7 @@ jobs:
 
             # Deploy to AWS
             echo "Deploying applications to AWS"
-            eb deploy mystoreEB-dev
+            eb deploy MyStore-dev
 workflows:
   Mystore:
     jobs:

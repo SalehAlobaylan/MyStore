@@ -18,6 +18,10 @@
 - User-friendly UX/UI
 - user-friendly aesthetic Notifications 
 
+
+Visit the site:
+http://mystore-dev.us-east-1.elasticbeanstalk.com
+
 ## Running the Website:
         npm install
 ---
@@ -27,6 +31,24 @@
 ### To run the frontend (port 4200):
         npm run start:frontend
 
+## ENV 
+
+```
+- POSTGRES_HOST=exampledbname.x1y2z3sn9skh.us-east-1.rds.amazonaws.com
+
+
+- POSTGRES_USERNAME=postgres
+
+
+- POSTGRES_PASSWORD=exampledbpassword
+
+
+- POSTGRES_DB=postgres
+
+
+- POSTGRES_PORT=5432
+
+```
 
 
 ## Built With
