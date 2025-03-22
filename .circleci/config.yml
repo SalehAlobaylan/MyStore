@@ -61,15 +61,13 @@ jobs:
             # Ensure .ebextensions directory exists
             mkdir -p .ebextensions
             
-            # Create nodecommand.config
-            cat > .ebextensions/01_nodecommand.config << 'EOF'
-            option_settings:
-              aws:elasticbeanstalk:container:nodejs:
-                NodeCommand: "bash ./start.sh"
-              aws:elasticbeanstalk:application:environment:
-                NODE_ENV: production
-                PORT: 8081
-            EOF
+            # Create nodecommand.config using echo commands to avoid heredoc syntax
+            echo 'option_settings:' > .ebextensions/01_nodecommand.config
+            echo '  aws:elasticbeanstalk:container:nodejs:' >> .ebextensions/01_nodecommand.config
+            echo '    NodeCommand: "bash ./start.sh"' >> .ebextensions/01_nodecommand.config
+            echo '  aws:elasticbeanstalk:application:environment:' >> .ebextensions/01_nodecommand.config
+            echo '    NODE_ENV: production' >> .ebextensions/01_nodecommand.config
+            echo '    PORT: 8081' >> .ebextensions/01_nodecommand.config
             
             # Copy .ebextensions to server directory
             cp -r .ebextensions server/
