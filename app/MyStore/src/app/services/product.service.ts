@@ -1,18 +1,24 @@
-import { Injectable } from '@angular/core';
+import { Injectable, Inject, PLATFORM_ID } from '@angular/core';
 import { Observable, catchError, switchMap, of } from 'rxjs';
 import { HttpClient } from '@angular/common/http';
 import { Product } from '../modules/product';
+import { isPlatformBrowser } from '@angular/common';
 
 @Injectable({
   providedIn: 'root',
 })
 export class ProductService {
-  // Dynamic API URL that works in both development and production  // Dynamic API URL that works in both development and production
-  private apiUrl = window.location.hostname === 'localhost' 
-  ? 'http://localhost:3000/api'  
-  : '/api';
+  private apiUrl: string;
   
-  constructor(private http: HttpClient) {}
+  constructor(
+    private http: HttpClient,
+    @Inject(PLATFORM_ID) private platformId: Object
+  ) {
+    // Safe initialization that works in both browser and server
+    this.apiUrl = isPlatformBrowser(this.platformId) && window.location.hostname === 'localhost'
+      ? 'http://localhost:3000/api'
+      : '/api';
+  }
 
   getProducts(): Observable<Product[]> {
     return this.http.get<Product[]>(`${this.apiUrl}/products`).pipe(
