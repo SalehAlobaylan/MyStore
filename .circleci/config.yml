@@ -13,21 +13,32 @@ jobs:
           name: Install dependencies
           command: |
             npm install
+            npm install -g @angular/cli typescript
             cd app/MyStore && npm install && cd ../..
       - run:
           name: Build application
           command: |
-            # Build Angular frontend
+            # Display installed versions
+            echo "Node version: $(node -v)"
+            echo "NPM version: $(npm -v)"
+            echo "Angular CLI version: $(ng version)"
+            echo "TypeScript version: $(tsc --version)"
+            
+            # Build Angular frontend with explicit path
             echo "Building Angular frontend..."
-            cd app/MyStore && npx ng build --configuration=production && cd ../..
+            cd app/MyStore 
+            npx --no-install ng build --configuration=production
+            cd ../..
             
-            # Ensure TypeScript is properly installed
-            echo "Installing TypeScript compiler..."
-            npm install --save-dev typescript
+            # Check the dist directory contents
+            ls -la app/MyStore/dist
             
-            # Compile TypeScript files using npx
+            # Compile TypeScript files with explicit path
             echo "Compiling TypeScript files..."
-            npx tsc -p app/backend/tsconfig.json
+            npx --no-install tsc -p app/backend/tsconfig.json
+            
+            # Check the compiled output
+            ls -la dist
             
             # Create proper directory structure for deployment
             mkdir -p server
