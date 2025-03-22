@@ -1,167 +1,88 @@
 version: 2.1
 orbs:
-  node: circleci/node@5.0.2
-  aws-cli: circleci/aws-cli@3.1.1
+  node: circleci/node@5.1.0
+  eb: circleci/aws-elastic-beanstalk@2.0.1
+  aws-cli: circleci/aws-cli@4.0.0
 
 jobs:
-  build:
-    docker:
-      - image: cimg/node:20.11.1
+  frontend:
+    working_directory: ~/app/MyStore/app/MyStore
+    executor: node/default
     steps:
-      - checkout
+      - checkout:
+          path: ~/app/MyStore
+      - node/install:
+          node-version: "20.11"
       - run:
-          name: Install dependencies
-          command: |
-            npm install
-            cd app/MyStore && npm install && cd ../..
+          name: Install Angular CLI
+          command: npm install -g @angular/cli
       - run:
-          name: Build application
+          name: Install Package
+          command: npm install
+      - run:
+          name: Build
+          command: npm run build
+      - aws-cli/setup
+      - run:
+          name: Prepare for deployment
           command: |
-            # Build Angular frontend
-            cd app/MyStore && ng build && cd ../..
-            # Compile backend
-            npx tsc -p app/backend/tsconfig.json
-      - persist_to_workspace:
-          root: .
-          paths:
-            - dist/
-            - package.json
-            - Procfile
-            - .ebextensions/
-            - app/MyStore/dist/
+            mkdir -p ../../dist/frontend
+            cp -r dist/my-store/* ../../dist/frontend/
 
-  deploy:
-    docker:
-      - image: cimg/python:3.9-node
-    environment:
-      AWS_REGION: us-east-1
+  api:
+    working_directory: ~/app/MyStore
+    executor: node/default
     steps:
-      - checkout
-      - attach_workspace:
-          at: .
-      - aws-cli/setup:
-          profile-name: default
+      - checkout:
+          path: ~/app/MyStore
+      - node/install:
+          node-version: "20.11"
       - run:
-          name: Verify AWS Credentials
-          command: |
-            # Verify AWS identity (will fail if credentials are invalid)
-            echo "Verifying AWS credentials..."
-            aws sts get-caller-identity --query "Account" || {
-              echo "AWS credentials verification failed!"
-              echo "Please check that AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY are correctly set in CircleCI environment variables."
-              exit 1
-            }
+          name: Install Package
+          command: npm install
       - run:
-          name: Create deployment package
+          name: Build Backend
+          command: npx tsc -p app/backend/tsconfig.json
+      - eb/setup
+      - run:
+          name: Create deployment files
           command: |
-            echo "Creating deployment package..."
-            
             # Create Procfile
             echo "web: npm start" > Procfile
             
-            # Create .ebextensions directory
+            # Create necessary directories
             mkdir -p .ebextensions
             
-            # Create nginx config to fix 502 errors using individual echo commands
-            echo "Creating nginx config..."
-            echo 'files:' > .ebextensions/01_nginx.config
-            echo '  "/etc/nginx/conf.d/proxy.conf":' >> .ebextensions/01_nginx.config
-            echo '    mode: "000644"' >> .ebextensions/01_nginx.config
-            echo '    owner: root' >> .ebextensions/01_nginx.config
-            echo '    group: root' >> .ebextensions/01_nginx.config
-            echo '    content: |' >> .ebextensions/01_nginx.config
-            echo '      upstream nodejs {' >> .ebextensions/01_nginx.config
-            echo '        server 127.0.0.1:8081;' >> .ebextensions/01_nginx.config
-            echo '        keepalive 256;' >> .ebextensions/01_nginx.config
-            echo '      }' >> .ebextensions/01_nginx.config
-            echo '      server {' >> .ebextensions/01_nginx.config
-            echo '        listen 8080;' >> .ebextensions/01_nginx.config
-            echo '        server_name localhost;' >> .ebextensions/01_nginx.config
-            echo '        location / {' >> .ebextensions/01_nginx.config
-            echo '          proxy_pass http://nodejs;' >> .ebextensions/01_nginx.config
-            echo '          proxy_http_version 1.1;' >> .ebextensions/01_nginx.config
-            echo '          proxy_set_header Upgrade $http_upgrade;' >> .ebextensions/01_nginx.config
-            echo '          proxy_set_header Connection "upgrade";' >> .ebextensions/01_nginx.config
-            echo '          proxy_set_header Host $host;' >> .ebextensions/01_nginx.config
-            echo '          proxy_set_header X-Real-IP $remote_addr;' >> .ebextensions/01_nginx.config
-            echo '          proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;' >> .ebextensions/01_nginx.config
-            echo '          proxy_cache_bypass $http_upgrade;' >> .ebextensions/01_nginx.config
-            echo '        }' >> .ebextensions/01_nginx.config
-            echo '      }' >> .ebextensions/01_nginx.config
-            
-            # Create node command config using individual echo commands
-            echo "Creating node command config..."
-            echo 'option_settings:' > .ebextensions/02_nodecommand.config
-            echo '  aws:elasticbeanstalk:container:nodejs:' >> .ebextensions/02_nodecommand.config
-            echo '    NodeCommand: "npm start"' >> .ebextensions/02_nodecommand.config
-            echo '  aws:elasticbeanstalk:application:environment:' >> .ebextensions/02_nodecommand.config
-            echo '    NODE_ENV: production' >> .ebextensions/02_nodecommand.config
-            echo '    PORT: 8081' >> .ebextensions/02_nodecommand.config
-            
-            # Create deployment zip
-            echo "Creating deployment zip..."
-            zip -r "deploy.zip" package.json package-lock.json Procfile dist/ .ebextensions/ app/MyStore/dist/
-            
-            # List files in the zip for verification
-            unzip -l deploy.zip | head -20
+            # Create basic configuration
+            echo 'option_settings:' > .ebextensions/01_nodecommand.config
+            echo '  aws:elasticbeanstalk:container:nodejs:' >> .ebextensions/01_nodecommand.config
+            echo '    NodeCommand: "npm start"' >> .ebextensions/01_nodecommand.config
+            echo '  aws:elasticbeanstalk:application:environment:' >> .ebextensions/01_nodecommand.config
+            echo '    NODE_ENV: production' >> .ebextensions/01_nodecommand.config
+            echo '    PORT: 8081' >> .ebextensions/01_nodecommand.config
       - run:
-          name: Deploy to Elastic Beanstalk
+          name: Deploy
           command: |
-            # Install EB CLI
-            echo "Installing EB CLI..."
-            pip install awsebcli --user
+            # Copy frontend files
+            mkdir -p dist/app/MyStore
+            cp -r dist/frontend/* dist/app/MyStore/
             
-            # Initialize EB CLI with individual echo commands instead of heredoc
-            mkdir -p ~/.elasticbeanstalk
-            echo 'branch-defaults:' > ~/.elasticbeanstalk/config.yml
-            echo '  default:' >> ~/.elasticbeanstalk/config.yml
-            echo '    environment: MyStore-dev' >> ~/.elasticbeanstalk/config.yml
-            echo 'global:' >> ~/.elasticbeanstalk/config.yml
-            echo '  application_name: MyStore' >> ~/.elasticbeanstalk/config.yml
-            echo '  default_ec2_keyname: null' >> ~/.elasticbeanstalk/config.yml
-            echo '  default_platform: Node.js 20' >> ~/.elasticbeanstalk/config.yml
-            echo '  default_region: us-east-1' >> ~/.elasticbeanstalk/config.yml
-            echo '  sc: git' >> ~/.elasticbeanstalk/config.yml
-            
-            # List EB environments to confirm connection
-            echo "Listing EB environments..."
-            aws elasticbeanstalk describe-environments --application-name MyStore --query "Environments[].{Name:EnvironmentName,Status:Status,Health:Health}" --output table
-            
-            # Upload to S3 directly 
-            echo "Uploading to S3..."
-            TIMESTAMP=$(date +%Y%m%d%H%M%S)
-            S3_KEY="deploy-${TIMESTAMP}.zip"
-            aws s3 cp deploy.zip "s3://elasticbeanstalk-us-east-1-204546021765/${S3_KEY}"
-            
-            # Create application version
-            echo "Creating application version..."
-            aws elasticbeanstalk create-application-version \
-              --application-name MyStore \
-              --version-label "v${TIMESTAMP}" \
-              --source-bundle S3Bucket="elasticbeanstalk-us-east-1-204546021765",S3Key="${S3_KEY}"
-            
-            # Update environment
-            echo "Updating environment..."
-            aws elasticbeanstalk update-environment \
-              --environment-name MyStore-dev \
-              --version-label "v${TIMESTAMP}"
-            
-            # Wait for deployment to start
-            echo "Waiting for deployment to start..."
-            sleep 10
-            
-            # Check deployment status
-            echo "Checking deployment status..."
-            aws elasticbeanstalk describe-environments --environment-names MyStore-dev --query "Environments[0].{Status:Status,Health:Health}" --output table
+            # Deploy to Elastic Beanstalk
+            eb use MyStore-dev
+            eb deploy MyStore-dev
 
 workflows:
-  version: 2
-  build-deploy:
+  mystore:
     jobs:
-      - build
-      - deploy:
-          requires:
-            - build
+      - frontend:
           filters:
             branches:
-              only: master
+              only:
+                - master
+      - api:
+          requires:
+            - frontend
+          filters:
+            branches:
+              only:
+                - master
