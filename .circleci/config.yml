@@ -78,34 +78,32 @@ jobs:
             echo "Creating .ebextensions directory"
             mkdir -p .ebextensions
             
-            # Create NodeCommand configuration
-            cat > .ebextensions/01_nodecommand.config << 'EOF'
-            option_settings:
-              aws:elasticbeanstalk:container:nodejs:
-                NodeCommand: "npm start"
-              aws:elasticbeanstalk:application:environment:
-                NODE_ENV: production
-                PORT: 8080
-            EOF
+            # Create NodeCommand configuration - Line by line to avoid heredoc
+            echo 'option_settings:' > .ebextensions/01_nodecommand.config
+            echo '  aws:elasticbeanstalk:container:nodejs:' >> .ebextensions/01_nodecommand.config
+            echo '    NodeCommand: "npm start"' >> .ebextensions/01_nodecommand.config
+            echo '  aws:elasticbeanstalk:application:environment:' >> .ebextensions/01_nodecommand.config
+            echo '    NODE_ENV: production' >> .ebextensions/01_nodecommand.config
+            echo '    PORT: 8080' >> .ebextensions/01_nodecommand.config
+            echo '  aws:elasticbeanstalk:container:nodejs:staticfiles:' >> .ebextensions/01_nodecommand.config
+            echo '    /dist/MyStore: /dist/MyStore' >> .ebextensions/01_nodecommand.config
             
-            # Create logs configuration
-            cat > .ebextensions/02_logs.config << 'EOF'
-            files:
-              "/opt/elasticbeanstalk/tasks/taillogs.d/nodejs.conf":
-                mode: "000755"
-                owner: root
-                group: root
-                content: |
-                  /var/log/nodejs/nodejs.log
-                  /var/log/nginx/error.log
-                  /var/log/nginx/access.log
-                  /var/log/eb-engine.log
-            commands:
-              01_create_log_dir:
-                command: mkdir -p /var/log/nodejs
-              02_change_permissions:
-                command: chmod 777 /var/log/nodejs
-            EOF
+            # Create logs configuration - Line by line to avoid heredoc
+            echo 'files:' > .ebextensions/02_logs.config
+            echo '  "/opt/elasticbeanstalk/tasks/taillogs.d/nodejs.conf":' >> .ebextensions/02_logs.config
+            echo '    mode: "000755"' >> .ebextensions/02_logs.config
+            echo '    owner: root' >> .ebextensions/02_logs.config
+            echo '    group: root' >> .ebextensions/02_logs.config
+            echo '    content: |' >> .ebextensions/02_logs.config
+            echo '      /var/log/nodejs/nodejs.log' >> .ebextensions/02_logs.config
+            echo '      /var/log/nginx/error.log' >> .ebextensions/02_logs.config
+            echo '      /var/log/nginx/access.log' >> .ebextensions/02_logs.config
+            echo '      /var/log/eb-engine.log' >> .ebextensions/02_logs.config
+            echo 'commands:' >> .ebextensions/02_logs.config
+            echo '  01_create_log_dir:' >> .ebextensions/02_logs.config
+            echo '    command: mkdir -p /var/log/nodejs' >> .ebextensions/02_logs.config
+            echo '  02_change_permissions:' >> .ebextensions/02_logs.config
+            echo '    command: chmod 777 /var/log/nodejs' >> .ebextensions/02_logs.config
             
             # Create a deployment zip file
             zip -r "deploy.zip" . -x "node_modules/*" "app/MyStore/node_modules/*" ".git/*"
@@ -115,21 +113,19 @@ jobs:
             # Check AWS configuration
             aws configure list
             
-            # Initialize EB application if needed (this won't override existing apps)
+            # Initialize EB application if needed
             echo "Configuring EB CLI"
             mkdir -p ~/.elasticbeanstalk
             
-            # Configure EB CLI
-            cat > ~/.elasticbeanstalk/config.yml << 'EOF'
-            branch-defaults:
-              master:
-                environment: MyStore-dev
-            global:
-              application_name: MyStore
-              default_region: us-east-1
-            EOF
+            # Configure EB CLI - Line by line to avoid heredoc
+            echo 'branch-defaults:' > ~/.elasticbeanstalk/config.yml
+            echo '  master:' >> ~/.elasticbeanstalk/config.yml
+            echo '    environment: MyStore-dev' >> ~/.elasticbeanstalk/config.yml
+            echo 'global:' >> ~/.elasticbeanstalk/config.yml
+            echo '  application_name: MyStore' >> ~/.elasticbeanstalk/config.yml
+            echo '  default_region: us-east-1' >> ~/.elasticbeanstalk/config.yml
             
-            # Deploy the application using the AWS CLI directly
+            # Deploy using AWS CLI directly
             echo "Starting deployment to EB"
             aws elasticbeanstalk create-application-version \
               --application-name MyStore \
