@@ -77,7 +77,7 @@ jobs:
           environment:
             DOCKERIZE_VERSION: v0.6.1
   # deploy step will run only after manual approval
-deploy:
+  deploy:
   docker:
     - image: "cimg/base:stable"
   steps:
