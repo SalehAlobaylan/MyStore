@@ -3,17 +3,13 @@
   "version": "0.0.0",
   "scripts": {
     "ng": "ng",
-    "start": "ng serve --proxy-config proxy.conf.json",
+    "start": "ng serve",
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
     "serve:ssr:MyStore": "node dist/my-store/server/server.mjs"
   },
   "private": true,
-  "engines": {
-    "node": ">=20.11.1 <21.0.0",
-    "npm": ">=9.0.0"
-  },
   "dependencies": {
     "@angular/animations": "^18.2.0",
     "@angular/common": "^18.2.0",

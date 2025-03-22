@@ -3,7 +3,6 @@ import { DataSource } from "typeorm";
 import express from "express";
 import cors from "cors";
 import path from "path";
-import fs from "fs";
 import { Product } from "./database/models/product.entity";
 import * as dotenv from "dotenv";
 
@@ -11,8 +10,20 @@ import * as dotenv from "dotenv";
 const envPath = path.resolve(process.cwd(), "app/backend/.env");
 dotenv.config({ path: envPath });
 
+// Early logging to debug environment variables without exposing secrets
+console.log('Server starting with:');
+console.log({
+  NODE_ENV: process.env.NODE_ENV,
+  PORT: process.env.PORT,
+  DB_HOST: process.env.POSTGRES_HOST ? '(Set)' : '(Not set)',
+  DB_USER: process.env.POSTGRES_USERNAME ? '(Set)' : '(Not set)',
+  DB_NAME: process.env.POSTGRES_DB ? '(Set)' : '(Not set)',
+  WORKING_DIR: process.cwd(),
+  NODE_VERSION: process.version
+});
+
 const app = express();
-const port = process.env.PORT || 8081;
+const port = process.env.PORT || 3000;
 const isCI = process.env.NODE_ENV === "ci";
 const isProd = process.env.NODE_ENV === "production";
 
@@ -44,35 +55,15 @@ app.get("/api/health", (req, res) => {
 
 // Serve static files in production
 if (isProd) {
-  // Try looking for files in different possible locations
-  const possiblePaths = [
-    path.join(__dirname, "../../../dist/MyStore"),
-    path.join(__dirname, "../../MyStore"),
-    path.join(__dirname, "../MyStore"),
-    path.join(__dirname, "../../../app/MyStore/dist/my-store"),
-  ];
+  const staticPath = path.join(__dirname, "../../../dist/MyStore");
+  app.use(express.static(staticPath));
 
-  let staticPath = "";
-  for (const p of possiblePaths) {
-    if (fs.existsSync(p)) {
-      staticPath = p;
-      console.log(`Using static files from: ${staticPath}`);
-      break;
+  // Serve index.html for any non-API routes
+  app.get("*", (req, res) => {
+    if (!req.path.startsWith("/api")) {
+      res.sendFile(path.join(staticPath, "index.html"));
     }
-  }
-
-  if (staticPath) {
-    app.use(express.static(staticPath));
-
-    // Serve index.html for any non-API routes
-    app.get("*", (req, res) => {
-      if (!req.path.startsWith("/api")) {
-        res.sendFile(path.join(staticPath, "index.html"));
-      }
-    });
-  } else {
-    console.warn("No static files directory found");
-  }
+  });
 }
 
 // Skip database connection in CI environment

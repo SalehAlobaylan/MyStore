@@ -8,12 +8,11 @@
     "install:all": "npm install && cd app/MyStore && npm install",
     
     "start": "node dist/app/backend/server.js",
-    "start:frontend": "cd app/MyStore && ng serve --proxy-config proxy.conf.json",
+    "start:frontend": "cd app/MyStore && ng serve",
     "start:backend": "tsx app/backend/server.ts",
     
-    "build": "cd app/MyStore && npm run build && cd ../.. && npx tsc -p app/backend/tsconfig.json && mkdir -p dist/app/MyStore && cp -r app/MyStore/dist/my-store/* dist/app/MyStore/",
+    "build": "cd app/MyStore && ng build && tsc -p app/backend/tsconfig.json",
     "frontend:Build": "cd app/MyStore && ng build",
-    "copy-dist-files": "mkdir -p dist/app/MyStore && cp -r app/MyStore/dist/my-store/* dist/app/MyStore/",
     
     "dev": "concurrently \"npm run dev:backend\" \"npm run start:frontend\"",
     "dev:backend": "nodemon app/backend/server.ts --exec tsx",
@@ -22,6 +21,10 @@
     "ci:backend": "NODE_ENV=ci npm run start:backend & sleep 5 && npm run test:backend && kill $!",
     
     "serve": "npm run start:frontend"
+  },
+  "engines": {
+    "node": "20.x",
+    "npm": "9.x"
   },
   "dependencies": {
     "@nestjs/typeorm": "^11.0.0",
@@ -41,10 +44,5 @@
     "nodemon": "^3.0.2",
     "tsx": "^4.7.0",
     "typescript": "^5.3.3"
-  },
-  "engines": {
-    "node": ">=20.11.1 <21.0.0",
-    "npm": ">=9.0.0"
-  },
-  "main": "dist/app/backend/server.js"
+  }
 }

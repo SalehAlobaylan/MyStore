@@ -12,53 +12,29 @@ jobs:
       - run:
           name: Install dependencies
           command: |
-            # Install packages locally instead of globally
             npm install
-            npm install typescript @angular/cli --save-dev
             cd app/MyStore && npm install && cd ../..
       - run:
           name: Build application
           command: |
-            # Display installed versions
-            echo "Node version: $(node -v)"
-            echo "NPM version: $(npm -v)"
-            
-            # Build Angular frontend with npx
-            echo "Building Angular frontend..."
-            cd app/MyStore 
-            npx ng build --configuration=production
-            cd ../..
-            
-            # Check the dist directory contents
-            ls -la app/MyStore/dist || echo "Angular build failed - no dist directory"
-            
-            # Compile TypeScript files with npx
-            echo "Compiling TypeScript files..."
+            # Build Angular frontend
+            cd app/MyStore && ng build && cd ../..
+            # Compile backend
             npx tsc -p app/backend/tsconfig.json
-            
-            # Check the compiled output
-            ls -la dist || echo "TypeScript compilation failed - no dist directory"
-            
-            # Create proper directory structure for deployment
-            mkdir -p server
-            cp -r dist server/
-            cp package.json server/
-            cp package-lock.json server/
-            
-            # Create startup script that works on AWS
-            echo "#!/bin/bash" > server/start.sh
-            echo "cd /var/app/current" >> server/start.sh
-            echo "node dist/app/backend/server.js" >> server/start.sh
-            chmod +x server/start.sh
       - persist_to_workspace:
           root: .
           paths:
-            - server
-            - .ebextensions
+            - dist/
+            - package.json
+            - Procfile
+            - .ebextensions/
+            - app/MyStore/dist/
 
   deploy:
     docker:
       - image: cimg/python:3.9-node
+    environment:
+      AWS_REGION: us-east-1
     steps:
       - checkout
       - attach_workspace:
@@ -68,76 +44,125 @@ jobs:
       - run:
           name: Verify AWS Credentials
           command: |
-            # Verify AWS credentials are working
+            # Verify AWS identity (will fail if credentials are invalid)
             echo "Verifying AWS credentials..."
-            aws sts get-caller-identity || echo "AWS credential verification failed"
-            
-            # Check if Elastic Beanstalk application exists
-            echo "Checking Elastic Beanstalk application..."
-            aws elasticbeanstalk describe-applications --application-names MyStore || echo "EB application check failed"
-            
-            # Check if Elastic Beanstalk environment exists
-            echo "Checking Elastic Beanstalk environment..."
-            aws elasticbeanstalk describe-environments --environment-names MyStore-dev --application-name MyStore || echo "EB environment check failed"
+            aws sts get-caller-identity --query "Account" || {
+              echo "AWS credentials verification failed!"
+              echo "Please check that AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY are correctly set in CircleCI environment variables."
+              exit 1
+            }
       - run:
-          name: Install EB CLI
+          name: Create deployment package
           command: |
-            pip install awsebcli --user
-            ~/.local/bin/eb --version || echo "EB CLI installation failed"
-      - run:
-          name: Create deployment files
-          command: |
-            # Create Procfile with bash command to avoid Windows path issues
-            echo "web: bash ./start.sh" > server/Procfile
+            echo "Creating deployment package..."
             
-            # Ensure .ebextensions directory exists
+            # Create Procfile
+            echo "web: npm start" > Procfile
+            
+            # Create .ebextensions directory
             mkdir -p .ebextensions
             
-            # Create nodecommand.config using echo commands to avoid heredoc syntax
-            echo 'option_settings:' > .ebextensions/01_nodecommand.config
-            echo '  aws:elasticbeanstalk:container:nodejs:' >> .ebextensions/01_nodecommand.config
-            echo '    NodeCommand: "bash ./start.sh"' >> .ebextensions/01_nodecommand.config
-            echo '  aws:elasticbeanstalk:application:environment:' >> .ebextensions/01_nodecommand.config
-            echo '    NODE_ENV: production' >> .ebextensions/01_nodecommand.config
-            echo '    PORT: 8081' >> .ebextensions/01_nodecommand.config
+            # Create nginx config to fix 502 errors
+            echo "Creating nginx config..."
+            cat > .ebextensions/01_nginx.config << EOL
+            files:
+              "/etc/nginx/conf.d/proxy.conf":
+                mode: "000644"
+                owner: root
+                group: root
+                content: |
+                  upstream nodejs {
+                    server 127.0.0.1:8081;
+                    keepalive 256;
+                  }
+                  server {
+                    listen 8080;
+                    server_name localhost;
+                    location / {
+                      proxy_pass http://nodejs;
+                      proxy_http_version 1.1;
+                      proxy_set_header Upgrade \$http_upgrade;
+                      proxy_set_header Connection "upgrade";
+                      proxy_set_header Host \$host;
+                      proxy_set_header X-Real-IP \$remote_addr;
+                      proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+                      proxy_cache_bypass \$http_upgrade;
+                    }
+                  }
+            EOL
             
-            # Copy .ebextensions to server directory
-            cp -r .ebextensions server/
+            # Create node command config
+            echo "Creating node command config..."
+            cat > .ebextensions/02_nodecommand.config << EOL
+            option_settings:
+              aws:elasticbeanstalk:container:nodejs:
+                NodeCommand: "npm start"
+              aws:elasticbeanstalk:application:environment:
+                NODE_ENV: production
+                PORT: 8081
+            EOL
             
-            # Navigate to server directory to create zip using Linux paths
-            cd server
+            # Create deployment zip
+            echo "Creating deployment zip..."
+            zip -r "deploy.zip" package.json package-lock.json Procfile dist/ .ebextensions/ app/MyStore/dist/
             
-            # Create deployment zip with forward slashes only
-            zip -r "../deploy.zip" * .ebextensions -x "node_modules/*"
+            # List files in the zip for verification
+            unzip -l deploy.zip | head -20
       - run:
           name: Deploy to Elastic Beanstalk
           command: |
-            # Upload zip with verbose output
-            echo "Uploading deployment package to S3..."
-            aws s3 cp deploy.zip s3://elasticbeanstalk-us-east-1-204546021765/deploy-${CIRCLE_BUILD_NUM}.zip --debug
+            # Install EB CLI
+            echo "Installing EB CLI..."
+            pip install awsebcli --user
             
-            # Create version with verbose output
+            # Initialize EB CLI
+            mkdir -p ~/.elasticbeanstalk
+            cat > ~/.elasticbeanstalk/config.yml << EOL
+            branch-defaults:
+              default:
+                environment: MyStore-dev
+            global:
+              application_name: MyStore
+              default_ec2_keyname: null
+              default_platform: Node.js 20
+              default_region: us-east-1
+              sc: git
+            EOL
+            
+            # List EB environments to confirm connection
+            echo "Listing EB environments..."
+            aws elasticbeanstalk describe-environments --application-name MyStore --query "Environments[].{Name:EnvironmentName,Status:Status,Health:Health}" --output table
+            
+            # Upload to S3 directly
+            echo "Uploading to S3..."
+            TIMESTAMP=$(date +%Y%m%d%H%M%S)
+            S3_KEY="deploy-${TIMESTAMP}.zip"
+            aws s3 cp deploy.zip "s3://elasticbeanstalk-us-east-1-204546021765/${S3_KEY}"
+            
+            # Create application version
             echo "Creating application version..."
             aws elasticbeanstalk create-application-version \
               --application-name MyStore \
-              --version-label mystore-${CIRCLE_BUILD_NUM} \
-              --source-bundle S3Bucket="elasticbeanstalk-us-east-1-204546021765",S3Key="deploy-${CIRCLE_BUILD_NUM}.zip" \
-              --debug
+              --version-label "v${TIMESTAMP}" \
+              --source-bundle S3Bucket="elasticbeanstalk-us-east-1-204546021765",S3Key="${S3_KEY}"
             
-            # Deploy version with verbose output
-            echo "Updating environment with new version..."
+            # Update environment
+            echo "Updating environment..."
             aws elasticbeanstalk update-environment \
               --environment-name MyStore-dev \
-              --version-label mystore-${CIRCLE_BUILD_NUM} \
-              --debug
+              --version-label "v${TIMESTAMP}"
             
-            # Verify deployment status
-            echo "Waiting for environment to update..."
-            sleep 30
-            aws elasticbeanstalk describe-environments --environment-names MyStore-dev --query "Environments[0].Status"
+            # Wait for deployment to start
+            echo "Waiting for deployment to start..."
+            sleep 10
+            
+            # Check deployment status
+            echo "Checking deployment status..."
+            aws elasticbeanstalk describe-environments --environment-names MyStore-dev --query "Environments[0].{Status:Status,Health:Health}" --output table
 
 workflows:
-  deploy-workflow:
+  version: 2
+  build-deploy:
     jobs:
       - build
       - deploy:

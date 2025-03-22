@@ -1,28 +1,27 @@
-import { Injectable, Inject, PLATFORM_ID } from '@angular/core';
-import { Observable, catchError, of } from 'rxjs';
+import { Injectable } from '@angular/core';
+import { Observable, catchError, switchMap, of } from 'rxjs';
 import { HttpClient } from '@angular/common/http';
 import { Product } from '../modules/product';
-import { isPlatformBrowser } from '@angular/common';
 
 @Injectable({
   providedIn: 'root',
 })
 export class ProductService {
-  // Always use relative API URLs to leverage the proxy configuration
-  private apiUrl = '/api';
+  // Dynamic API URL that works in both development and production  // Dynamic API URL that works in both development and production
+  private apiUrl = window.location.hostname === 'localhost' 
+  ? 'http://localhost:3000/api'  
+  : '/api';
   
-  constructor(
-    private http: HttpClient,
-    @Inject(PLATFORM_ID) private platformId: Object
-  ) {}
+  constructor(private http: HttpClient) {}
 
   getProducts(): Observable<Product[]> {
-    // Check if we're in a browser environment
-    if (!isPlatformBrowser(this.platformId)) {
-      return of([]); // Return empty array during SSR
-    }
-    
     return this.http.get<Product[]>(`${this.apiUrl}/products`).pipe(
+      switchMap((products) => {
+        if (products && products.length > 0) {
+          return of(products);
+        }
+        return this.http.get<Product[]>('assets/Nike.Nike.json');
+      }),
       catchError(() => this.http.get<Product[]>('assets/Nike.Nike.json'))
     );
   }
