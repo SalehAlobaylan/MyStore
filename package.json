@@ -7,7 +7,7 @@
     "frontend:install": "cd app/MyStore && npm install",
     "install:all": "npm install && cd app/MyStore && npm install",
     
-    "start": "node dist/app/backend/server.js",
+    "start": "concurrently \"npm run dev:backend\" \"npm run start:frontend\"",
     "start:frontend": "cd app/MyStore && ng serve",
     "start:backend": "tsx app/backend/server.ts",
     
