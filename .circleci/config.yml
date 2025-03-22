@@ -17,10 +17,16 @@ jobs:
       - run:
           name: Build application
           command: |
-            # Build Angular frontend using npx
+            # Build Angular frontend
+            echo "Building Angular frontend..."
             cd app/MyStore && npx ng build --configuration=production && cd ../..
             
+            # Ensure TypeScript is properly installed
+            echo "Installing TypeScript compiler..."
+            npm install --save-dev typescript
+            
             # Compile TypeScript files using npx
+            echo "Compiling TypeScript files..."
             npx tsc -p app/backend/tsconfig.json
             
             # Create proper directory structure for deployment
