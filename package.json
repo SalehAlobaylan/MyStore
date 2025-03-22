@@ -11,9 +11,9 @@
     "start:frontend": "cd app/MyStore && ng serve",
     "start:backend": "tsx app/backend/server.ts",
     
-    "build": "cd app/MyStore && ng build && cd ../.. && tsc -p app/backend/tsconfig.json && npm run copy-env",
+    "build": "cd app/MyStore && ng build && cd ../.. && tsc -p app/backend/tsconfig.json",
     "frontend:Build": "cd app/MyStore && ng build",
-    "copy-env": "cp .env dist/ || copy .env dist\\",
+    "copy-env": "mkdir -p dist && touch dist/.env",
     
     "dev": "concurrently \"npm run dev:backend\" \"npm run start:frontend\"",
     "dev:backend": "nodemon app/backend/server.ts --exec tsx",
