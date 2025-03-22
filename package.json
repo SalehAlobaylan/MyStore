@@ -7,7 +7,7 @@
     "frontend:install": "cd app/MyStore && npm install",
     "install:all": "npm install && cd app/MyStore && npm install",
     
-    "start": "NODE_ENV=production node dist/app/backend/server.js",
+    "start": "cross-env NODE_ENV=production node dist/app/backend/server.js",
     "start:frontend": "cd app/MyStore && ng serve",
     "start:backend": "tsx app/backend/server.ts",
     
@@ -31,7 +31,8 @@
     "pg": "^8.14.0",
     "pg-hstore": "^2.3.4",
     "reflect-metadata": "^0.2.2",
-    "typeorm": "^0.3.21"
+    "typeorm": "^0.3.21",
+    "cross-env": "^7.0.3"
   },
   "devDependencies": {
     "@types/cors": "^2.8.17",

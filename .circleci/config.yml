@@ -55,43 +55,60 @@ jobs:
 
   deploy:
     docker:
-      - image: cimg/base:stable
+      - image: cimg/node:20.6
     steps:
-      - node/install:
-          node-version: "20"
       - checkout
-      - aws-cli/setup
-      - eb/setup
       - run:
-          name: Deploy App
+          name: Install EB CLI
           command: |
-            # Install dependencies and build
+            sudo apt-get update
+            sudo apt-get install -y python3-pip
+            sudo pip3 install awsebcli
+      - run:
+          name: Configure AWS
+          command: |
+            mkdir -p ~/.aws
+            echo "[default]" > ~/.aws/config
+            echo "region = us-east-1" >> ~/.aws/config
+            echo "[default]" > ~/.aws/credentials
+            echo "aws_access_key_id = ${AWS_ACCESS_KEY_ID}" >> ~/.aws/credentials
+            echo "aws_secret_access_key = ${AWS_SECRET_ACCESS_KEY}" >> ~/.aws/credentials
+      - run:
+          name: Build app
+          command: |
             npm install
             cd app/MyStore && npm install && cd ../..
             npm run build
+      - run:
+          name: Deploy to Elastic Beanstalk
+          command: |
+            # Create necessary files for deployment
+            echo "Creating Procfile and config files"
+            echo "web: npm start" > Procfile
             
-            # Create the .ebextensions directory if it doesn't exist
+            # Ensure .ebextensions exists
             mkdir -p .ebextensions
+            cat > .ebextensions/01_nodecommand.config << EOL
+            option_settings:
+              aws:elasticbeanstalk:container:nodejs:
+                NodeCommand: "npm start"
+              aws:elasticbeanstalk:application:environment:
+                NODE_ENV: production
+                PORT: 8080
+            EOL
             
-            # Archive for deployment
-            zip -r "deploy.zip" . -x "node_modules/*" "app/MyStore/node_modules/*"
-            
-            # Deploy to Elastic Beanstalk
-            eb deploy MyStore-dev --timeout 30 \
-              --staged \
-              --envvars NODE_ENV=production,PORT=8080,POSTGRES_HOST=$POSTGRES_HOST,POSTGRES_USERNAME=$POSTGRES_USERNAME,POSTGRES_PASSWORD=$POSTGRES_PASSWORD,POSTGRES_DB=$POSTGRES_DB
+            # Deploy to EB
+            eb use MyStore-dev
+            eb deploy --staged --timeout 30 \
+              --env-vars PORT=8080,NODE_ENV=production,POSTGRES_HOST=$POSTGRES_HOST,POSTGRES_USERNAME=$POSTGRES_USERNAME,POSTGRES_PASSWORD=$POSTGRES_PASSWORD,POSTGRES_DB=$POSTGRES_DB
 
 workflows:
   Mystore:
     jobs:
       - build
-      - hold:
-          type: approval
+      - deploy:
           requires:
             - build
           filters:
             branches:
               only: master
-      - deploy:
-          requires:
-            - hold
