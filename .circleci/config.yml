@@ -14,27 +14,24 @@ jobs:
           command: |
             npm install
             cd app/MyStore && npm install && cd ../..
+            npm install --save-dev typescript
       - run:
           name: Build application
           command: |
             # Build Angular frontend
             echo "Building Angular frontend..."
             cd app/MyStore && npx ng build --configuration=production && cd ../..
-            
-            # Ensure TypeScript is properly installed
-            echo "Installing TypeScript compiler..."
-            npm install --save-dev typescript
-            
+
             # Compile TypeScript files using npx
             echo "Compiling TypeScript files..."
             npx tsc -p app/backend/tsconfig.json
-            
+
             # Create proper directory structure for deployment
             mkdir -p server
             cp -r dist server/
             cp package.json server/
             cp package-lock.json server/
-            
+
             # Create startup script that works on AWS
             echo "#!/bin/bash" > server/start.sh
             echo "cd /var/app/current" >> server/start.sh
@@ -61,11 +58,11 @@ jobs:
             # Verify AWS credentials are working
             echo "Verifying AWS credentials..."
             aws sts get-caller-identity
-            
+
             # Check if Elastic Beanstalk application exists
             echo "Checking Elastic Beanstalk application..."
             aws elasticbeanstalk describe-applications --application-names MyStore
-            
+
             # Check if Elastic Beanstalk environment exists
             echo "Checking Elastic Beanstalk environment..."
             aws elasticbeanstalk describe-environments --environment-names MyStore-dev --application-name MyStore
@@ -78,10 +75,10 @@ jobs:
           command: |
             # Create Procfile with bash command to avoid Windows path issues
             echo "web: bash ./start.sh" > server/Procfile
-            
+
             # Ensure .ebextensions directory exists
             mkdir -p .ebextensions
-            
+
             # Create nodecommand.config using echo commands to avoid heredoc syntax
             echo 'option_settings:' > .ebextensions/01_nodecommand.config
             echo '  aws:elasticbeanstalk:container:nodejs:' >> .ebextensions/01_nodecommand.config
@@ -89,13 +86,13 @@ jobs:
             echo '  aws:elasticbeanstalk:application:environment:' >> .ebextensions/01_nodecommand.config
             echo '    NODE_ENV: production' >> .ebextensions/01_nodecommand.config
             echo '    PORT: 8081' >> .ebextensions/01_nodecommand.config
-            
+
             # Copy .ebextensions to server directory
             cp -r .ebextensions server/
-            
+
             # Navigate to server directory to create zip using Linux paths
             cd server
-            
+
             # Create deployment zip with forward slashes only
             zip -r "../deploy.zip" * .ebextensions -x "node_modules/*"
       - run:
@@ -104,7 +101,7 @@ jobs:
             # Upload zip with verbose output
             echo "Uploading deployment package to S3..."
             aws s3 cp deploy.zip s3://elasticbeanstalk-us-east-1-204546021765/deploy-${CIRCLE_BUILD_NUM}.zip --debug
-            
+
             # Create version with verbose output
             echo "Creating application version..."
             aws elasticbeanstalk create-application-version \
@@ -112,14 +109,14 @@ jobs:
               --version-label mystore-${CIRCLE_BUILD_NUM} \
               --source-bundle S3Bucket="elasticbeanstalk-us-east-1-204546021765",S3Key="deploy-${CIRCLE_BUILD_NUM}.zip" \
               --debug
-            
+
             # Deploy version with verbose output
             echo "Updating environment with new version..."
             aws elasticbeanstalk update-environment \
               --environment-name MyStore-dev \
               --version-label mystore-${CIRCLE_BUILD_NUM} \
               --debug
-            
+
             # Verify deployment status
             echo "Waiting for environment to update..."
             sleep 30
