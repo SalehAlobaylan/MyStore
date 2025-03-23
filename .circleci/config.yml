@@ -45,6 +45,9 @@ jobs:
           paths:
             - server
             - .ebextensions
+      - run:
+          name: Output NPM Log
+          command: cat /home/circleci/.npm/_logs/*.log || echo "No log files found"
 
   deploy:
     docker:
