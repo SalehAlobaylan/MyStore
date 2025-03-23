@@ -16,6 +16,9 @@ jobs:
             cd app/MyStore && npm install && cd ../..
             npm install --save-dev typescript
       - run:
+          name: Fix vulnerabilities
+          command: npm audit fix
+      - run:
           name: Build application
           command: |
             # Build Angular frontend
