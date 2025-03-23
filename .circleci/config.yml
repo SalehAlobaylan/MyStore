@@ -14,7 +14,7 @@ jobs:
           command: |
             npm install
             cd app/MyStore && npm install && cd ../..
-            npm install --save-dev typescript
+            npm install --save-dev typescript @angular/cli
       - run:
           name: Fix vulnerabilities
           command: npm audit fix
