@@ -13,7 +13,7 @@
 <!-- - A store built with MEAN stack -->
 - A store built with Angular connected with AWS postgres DB
 
-- it's a simple demonstration website without authentication just checkout form and fouced in frontend with angular
+<!-- - it's a simple demonstration website without authentication just checkout form and fouced in frontend with angular -->
 - it contains products in the landing page with navigation bar to navigate to the cart or opposite,
 - the header contains number of products calculator in the cart
 - you can select number of same product that you want to add to the cart, also you can change it in the cart if you changed your mind after seeing the overall price
@@ -21,14 +21,15 @@
 - user-friendly aesthetic Notifications 
 
 
-Visit the site:
-http://mystore-dev.us-east-1.elasticbeanstalk.com
-
 ## Running the Website:
         npm install
         
 ---
         npm run dev     
+
+
+Visit the site:
+http://mystore-dev.us-east-1.elasticbeanstalk.com
 
 ## ENV 
 * These credentials are limited and not sensitive and will expire soon, adding it for testing and will be removed soon 
