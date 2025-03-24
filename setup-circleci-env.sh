@@ -1,36 +1,48 @@
 #!/bin/bash
-# Use this script to set up your CircleCI environment variables
 
-# Replace these with your actual AWS credentials
-AWS_ACCESS_KEY_ID="AKIAS7H7ETGC6G57V7B6"
-AWS_SECRET_ACCESS_KEY="4jinQGw95E5H2jo2NgDBtoa+gXcsNHyJeU9KHTX8"
+echo "Setting up CircleCI environment variables..."
 
-# Install CircleCI CLI if not already installed
+# First, check if CircleCI CLI is installed
 if ! command -v circleci &> /dev/null; then
     echo "Installing CircleCI CLI..."
     curl -fLSs https://raw.githubusercontent.com/CircleCI-Public/circleci-cli/master/install.sh | bash
 fi
 
-# Set environment variables in CircleCI
-echo "Setting CircleCI environment variables..."
+# Setup CircleCI token
+if [ -z "$CIRCLE_TOKEN" ]; then
+    echo "Please enter your CircleCI Personal API Token (create one at https://circleci.com/account/api):"
+    read -s CIRCLE_TOKEN
+    export CIRCLE_TOKEN
+fi
 
-# Extract GitHub username and repo from git remote URL
-GITHUB_REPO_URL=$(git config --get remote.origin.url)
-GITHUB_USERNAME=$(echo $GITHUB_REPO_URL | sed -n 's/.*github.com[:/]\([^/]*\).*/\1/p')
-REPO_NAME=$(echo $GITHUB_REPO_URL | sed -n 's/.*\/\([^/]*\)\.git$/\1/p')
+# Configure CircleCI CLI
+echo "Configuring CircleCI CLI..."
+circleci setup --token $CIRCLE_TOKEN
 
-echo "Detected GitHub username: $GITHUB_USERNAME"
-echo "Detected repository name: $REPO_NAME"
+# Get organization ID
+echo "Getting organization ID..."
+ORG_SLUG=$(git config --get remote.origin.url | sed -n 's/.*github.com[:/]\([^/]*\).*/\1/p')
+ORG_INFO=$(curl -s -H "Circle-Token: $CIRCLE_TOKEN" "https://circleci.com/api/v2/me/collaborations")
+ORG_ID=$(echo $ORG_INFO | jq -r ".items[] | select(.name==\"$ORG_SLUG\") | .id")
 
-# Set environment variables in CircleCI
-circleci context create github "$GITHUB_USERNAME/$REPO_NAME" || true
-circleci context store-secret github "$GITHUB_USERNAME/$REPO_NAME" AWS_ACCESS_KEY_ID "$AWS_ACCESS_KEY_ID"
-circleci context store-secret github "$GITHUB_USERNAME/$REPO_NAME" AWS_SECRET_ACCESS_KEY "$AWS_SECRET_ACCESS_KEY"
-circleci context store-secret github "$GITHUB_USERNAME/$REPO_NAME" AWS_DEFAULT_REGION "us-east-1"
-circleci context store-secret github "$GITHUB_USERNAME/$REPO_NAME" POSTGRES_HOST "mystoredb1.cqc8bwsn9skh.us-east-1.rds.amazonaws.com"
-circleci context store-secret github "$GITHUB_USERNAME/$REPO_NAME" POSTGRES_USERNAME "postgres"
-circleci context store-secret github "$GITHUB_USERNAME/$REPO_NAME" POSTGRES_PASSWORD "postgres927319"
-circleci context store-secret github "$GITHUB_USERNAME/$REPO_NAME" POSTGRES_DB "postgres"
+if [ -z "$ORG_ID" ]; then
+    echo "Could not find organization ID. Please enter it manually:"
+    read ORG_ID
+fi
+
+# Create context
+CONTEXT_NAME="mystore-env"
+echo "Creating context '$CONTEXT_NAME'..."
+circleci context create --org-id "$ORG_ID" "$CONTEXT_NAME"
+
+# Set environment variables
+echo "Setting environment variables..."
+circleci context store-secret --org-id "$ORG_ID" "$CONTEXT_NAME" "AWS_ACCESS_KEY_ID" "$AWS_ACCESS_KEY_ID"
+circleci context store-secret --org-id "$ORG_ID" "$CONTEXT_NAME" "AWS_SECRET_ACCESS_KEY" "$AWS_SECRET_ACCESS_KEY"
+circleci context store-secret --org-id "$ORG_ID" "$CONTEXT_NAME" "AWS_DEFAULT_REGION" "us-east-1"
+circleci context store-secret --org-id "$ORG_ID" "$CONTEXT_NAME" "POSTGRES_HOST" "$POSTGRES_HOST"
+circleci context store-secret --org-id "$ORG_ID" "$CONTEXT_NAME" "POSTGRES_USERNAME" "postgres"
+circleci context store-secret --org-id "$ORG_ID" "$CONTEXT_NAME" "POSTGRES_PASSWORD" "$POSTGRES_PASSWORD"
+circleci context store-secret --org-id "$ORG_ID" "$CONTEXT_NAME" "POSTGRES_DB" "postgres"
 
 echo "Environment variables set successfully!"
-echo "Please go to CircleCI web UI to verify the variables are set correctly."
