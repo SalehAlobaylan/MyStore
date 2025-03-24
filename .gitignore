@@ -6,3 +6,10 @@ ormconfig.json
 .elasticbeanstalk/*
 !.elasticbeanstalk/*.cfg.yml
 !.elasticbeanstalk/*.global.yml
+
+# Large files
+*.zip
+*.gz
+*.tar
+*.rar
+dist/
