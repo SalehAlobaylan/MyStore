@@ -27,40 +27,7 @@
 ---
         npm run dev     
 
-
-Visit the site:
-http://mystore-dev.us-east-1.elasticbeanstalk.com
-
 ## ENV 
-* These credentials are limited and not sensitive and will expire soon, adding it for testing and will be removed soon 
-```
-- AWS_ACCESS_KEY_ID=
-
-- AWS_SECRET_ACCESS_KEY=
-
-- POSTGRES_HOST=mystoredb1.cqc8bwsn9skh.us-east-1.rds.amazonaws.com
-
-
-- POSTGRES_USERNAME=postgres
-
-
-- POSTGRES_PASSWORD=postgres927319
-
-
-- POSTGRES_DB=postgres
-
-
-- POSTGRES_PORT=5432
-
-```
-### To run the backend (port 3000) -not necessary-:
-        npm run dev:backend
-### To run the frontend (port 4200):
-        npm run start:frontend
-
-
-
-<!-- ## ENV 
 
 ```
 - POSTGRES_HOST=exampledbname.x1y2z3sn9skh.us-east-1.rds.amazonaws.com
@@ -77,7 +44,21 @@ http://mystore-dev.us-east-1.elasticbeanstalk.com
 
 - POSTGRES_PORT=5432
 
-``` -->
+```
+
+
+
+Visit the site:
+http://mystore-dev.us-east-1.elasticbeanstalk.com
+
+
+### To run the backend (port 3000) -not necessary-:
+        npm run dev:backend
+### To run the frontend (port 4200):
+        npm run start:frontend
+
+
+
 
 
 ## Built With
@@ -91,7 +72,6 @@ http://mystore-dev.us-east-1.elasticbeanstalk.com
 ![AWS RDS](https://img.shields.io/badge/AWS%20RDS-527FFF?style=for-the-badge&logo=Amazon%20RDS&logoColor=white)
 ![AWS S3](https://img.shields.io/badge/AWS%20S3-%23569A31.svg?style=for-the-badge&logo=amazon-s3&logoColor=white)
 ![AWS Elastic Beanstalk](https://img.shields.io/badge/AWS%20Elastic%20Beanstalk-232F3E?style=for-the-badge&logo=amazon-aws&logoColor=white)
-
 
 
 
