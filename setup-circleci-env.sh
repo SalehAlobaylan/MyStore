@@ -2,8 +2,8 @@
 # Use this script to set up your CircleCI environment variables
 
 # Replace these with your actual AWS credentials
-AWS_ACCESS_KEY_ID="YOUR_AWS_ACCESS_KEY_ID"
-AWS_SECRET_ACCESS_KEY="YOUR_AWS_SECRET_ACCESS_KEY"
+AWS_ACCESS_KEY_ID="AKIAS7H7ETGC6G57V7B6"
+AWS_SECRET_ACCESS_KEY="4jinQGw95E5H2jo2NgDBtoa+gXcsNHyJeU9KHTX8"
 
 # Install CircleCI CLI if not already installed
 if ! command -v circleci &> /dev/null; then
