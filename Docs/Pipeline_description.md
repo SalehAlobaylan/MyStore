@@ -1,5 +1,5 @@
 ## Pipeline description
-
+<!-- 
 - Version and Orbs: The pipeline uses CircleCI 2.1 with Node.js, AWS Elastic Beanstalk, and AWS CLI orbs
 
 - Build Job: Handles building and testing in a containerized environment
@@ -16,11 +16,10 @@
 - Workflow Control: Implements a gated deployment process
   - Requires manual approval before deployment
   - Only deploys from the master branch
-  - Ensures controlled releases to production
+  - Ensures controlled releases to production -->
 
-## CircleCI Configuration Overview
 
-The CircleCI configuration file (`.circleci/config.yml`) defines the CI/CD pipeline for the MyStore application. This pipeline is responsible for building, testing, and deploying the application to AWS Elastic Beanstalk. Below is a detailed breakdown of the configuration:
+
 
 ### Version and Orbs
 - The pipeline uses CircleCI version 2.1.
