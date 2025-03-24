@@ -24,14 +24,40 @@ http://mystore-dev.us-east-1.elasticbeanstalk.com
 
 ## Running the Website:
         npm install
+        
 ---
         npm run dev     
+
+## ENV 
+* These credentials are limited and not sensitive and will expire soon, adding it for testing and will be removed soon 
+```
+- AWS_ACCESS_KEY_ID=
+
+- AWS_SECRET_ACCESS_KEY=
+
+- POSTGRES_HOST=mystoredb1.cqc8bwsn9skh.us-east-1.rds.amazonaws.com
+
+
+- POSTGRES_USERNAME=postgres
+
+
+- POSTGRES_PASSWORD=postgres927319
+
+
+- POSTGRES_DB=postgres
+
+
+- POSTGRES_PORT=5432
+
+```
 ### To run the backend (port 3000) -not necessary-:
         npm run dev:backend
 ### To run the frontend (port 4200):
         npm run start:frontend
 
-## ENV 
+
+
+<!-- ## ENV 
 
 ```
 - POSTGRES_HOST=exampledbname.x1y2z3sn9skh.us-east-1.rds.amazonaws.com
@@ -48,7 +74,7 @@ http://mystore-dev.us-east-1.elasticbeanstalk.com
 
 - POSTGRES_PORT=5432
 
-```
+``` -->
 
 
 ## Built With
