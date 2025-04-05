@@ -5,6 +5,7 @@ import cors from "cors";
 import path from "path";
 import fs from "fs";
 import { Product } from "./database/models/product.entity";
+import { Order } from "./database/models/order.entity";
 import * as dotenv from "dotenv";
 
 // Load environment variables
@@ -104,7 +105,7 @@ if (isCI) {
     username: process.env.POSTGRES_USERNAME,
     password: process.env.POSTGRES_PASSWORD,
     database: process.env.POSTGRES_DB,
-    entities: [Product],
+    entities: [Product, Order],
     synchronize: false,
     ssl: { rejectUnauthorized: false },
     extra: {
@@ -231,6 +232,82 @@ if (isCI) {
           }
         } catch (error) {
           res.status(500).json({ error: "Error fetching product" });
+        }
+      });
+
+      // Add these new endpoints after the existing product endpoints
+      app.post("/api/orders", async (req, res) => {
+        try {
+          const { fullName, address, creditCard, total, items } = req.body;
+          
+          if (!fullName || !address || !creditCard || !total || !items) {
+            return res.status(400).json({ 
+              error: "Missing required fields (fullName, address, creditCard, total, items)" 
+            });
+          }
+
+          const orderRepository = dataSource.getRepository(Order);
+          const productRepository = dataSource.getRepository(Product);
+          
+          // Get the last 4 digits of the credit card (for security)
+          const creditCardLast4 = creditCard.slice(-4);
+          
+          // Find all products in the order
+          const productIds = items.map(item => item.product.id);
+          const productEntities = await productRepository.findByIds(productIds);
+          
+          // Create and save the new order
+          const newOrder = orderRepository.create({
+            fullName,
+            address,
+            creditCardLast4,
+            total,
+            products: productEntities
+          });
+          
+          const savedOrder = await orderRepository.save(newOrder);
+          res.status(201).json({ 
+            message: "Order created successfully", 
+            orderId: savedOrder.id 
+          });
+        } catch (error) {
+          console.error("Error creating order:", error);
+          res.status(500).json({ error: "Error creating order" });
+        }
+      });
+
+      app.get("/api/orders", async (req, res) => {
+        try {
+          const orderRepository = dataSource.getRepository(Order);
+          const orders = await orderRepository.find({ 
+            relations: ["products"] 
+          });
+          res.json(orders);
+        } catch (error) {
+          res.status(500).json({ error: "Error fetching orders" });
+        }
+      });
+
+      app.get("/api/orders/:id", async (req, res) => {
+        try {
+          const orderId = Number(req.params.id);
+          if (isNaN(orderId)) {
+            return res.status(400).json({ error: "Invalid order ID" });
+          }
+
+          const orderRepository = dataSource.getRepository(Order);
+          const order = await orderRepository.findOne({
+            where: { id: orderId },
+            relations: ["products"]
+          });
+
+          if (order) {
+            res.json(order);
+          } else {
+            res.status(404).json({ error: "Order not found" });
+          }
+        } catch (error) {
+          res.status(500).json({ error: "Error fetching order" });
         }
       });
 

@@ -74,6 +74,28 @@ export class CartComponent implements OnInit {
         (sum, item) => sum + Number(item.product.price) * item.quantity,
         0
       );
+      
+      // Save the order to the database
+      const response = await fetch('http://localhost:3000/api/orders', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          fullName: this.form.fullName,
+          address: this.form.address,
+          creditCard: this.form.creditCard,
+          total: this.form.total,
+          items: items
+        })
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to save order');
+      }
+      
+      const data = await response.json();
+      console.log('Order saved successfully:', data);
 
       await this.router.navigate(['/confirmation'], {
         state: { orderDetails: this.form },
