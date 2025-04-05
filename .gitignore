@@ -1,6 +1,7 @@
 node_modules
 set_env.sh
 .env
+.env.production
 ormconfig.json
 # Elastic Beanstalk Files
 .elasticbeanstalk/*
