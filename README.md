@@ -27,7 +27,7 @@
 ---
         npm run dev     
 
-## ENV 
+## ENV (only samples no real values, just to make you now how to)
 
 ```
 - POSTGRES_HOST=exampledbname.x1y2z3sn9skh.us-east-1.rds.amazonaws.com
