@@ -6,21 +6,16 @@
     "backend:install": "echo 'Installing backend dependencies'",
     "frontend:install": "cd app/MyStore && npm install",
     "install:all": "npm install && cd app/MyStore && npm install",
-    
     "start": "node dist/app/backend/server.js",
     "start:frontend": "cd app/MyStore && ng serve --proxy-config proxy.conf.json",
     "start:backend": "tsx app/backend/server.ts",
-    
     "build": "cd app/MyStore && ng build && cd ../.. && npx tsc -p app/backend/tsconfig.json && mkdir -p dist/app/MyStore && cp -r app/MyStore/dist/my-store/* dist/app/MyStore/",
     "frontend:Build": "cd app/MyStore && ng build",
     "copy-dist-files": "mkdir -p dist/app/MyStore && cp -r app/MyStore/dist/my-store/* dist/app/MyStore/",
-    
     "dev": "concurrently \"npm run dev:backend\" \"npm run start:frontend\"",
     "dev:backend": "nodemon app/backend/server.ts --exec tsx",
-    
     "test:backend": "curl --retry 5 --retry-delay 3 --retry-connrefused http://localhost:3000/api/health || exit 0",
     "ci:backend": "NODE_ENV=ci npm run start:backend & sleep 5 && npm run test:backend && kill $!",
-    
     "serve": "npm run start:frontend"
   },
   "dependencies": {
@@ -36,6 +31,7 @@
   "devDependencies": {
     "@types/cors": "^2.8.17",
     "@types/express": "^4.17.21",
+    "@types/mongoose": "^5.11.96",
     "@types/node": "^20.17.24",
     "concurrently": "^8.2.2",
     "nodemon": "^3.0.2",
