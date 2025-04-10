@@ -9,7 +9,7 @@ import { isPlatformBrowser } from '@angular/common';
 })
 export class ProductService {
   // Always use relative API URLs to leverage the proxy configuration
-  private apiUrl = '/api';
+  private apiUrl = 'http://localhost:3000/api';
   
   constructor(
     private http: HttpClient,
@@ -18,12 +18,12 @@ export class ProductService {
 
   getProducts(): Observable<Product[]> {
     // Check if we're in a browser environment
-    if (!isPlatformBrowser(this.platformId)) {
-      return of([]); // Return empty array during SSR
-    }
+    // if (!isPlatformBrowser(this.platformId)) {
+    //   return of([]); // Return empty array during SSR
+    // }
     
     return this.http.get<Product[]>(`${this.apiUrl}/products`).pipe(
-      catchError(() => this.http.get<Product[]>('assets/Nike.Nike.json'))
+      // catchError(() => this.http.get<Product[]>('assets/Nike.Nike.json'))
     );
   }
 

@@ -5,12 +5,12 @@ import { ProductModel, IProduct } from "./models/product.model.js";
 main().catch((err) => console.log(err));
 
 async function main() {
-  await mongoose.connect("mongodb://127.0.0.1:27017/NikeProducts");
+  await mongoose.connect("mongodb://127.0.0.1:27017/Nike");
 }
 
 export class MongoDatabase {
   private static instance: MongoDatabase;
-  private readonly uri = "mongodb://127.0.0.1:27017/NikeProducts";
+  private readonly uri = "mongodb://127.0.0.1:27017/Nike";
 
   private constructor() {
     this.connect();
@@ -36,6 +36,7 @@ export class MongoDatabase {
   async getProducts(): Promise<Product[]> {
     try {
       const products = await ProductModel.find().exec();
+      console.log("Products fetched successfully: ", products);
       return products.map((p) => ({
         id: p.id,
         name: p.name,
@@ -106,3 +107,6 @@ export class MongoDatabase {
     }
   }
 }
+
+
+

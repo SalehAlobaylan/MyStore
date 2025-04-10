@@ -2,6 +2,8 @@ import express  from "express";
 import cors from "cors";
 import dotenv from "dotenv";
 import { DataSource } from "typeorm"
+import { MongoDatabase } from "./database/MongoDatabase";
+import { PostgresDatabase } from "./database/PostgresDatabase";
 import { Product } from "./database/models/product.entity";
 import { Order } from "./database/models/order.entity";
 
@@ -17,24 +19,66 @@ app.use(
 )
 
 
-const database = new DataSource({
-    type: "postgres",
-    host: process.env.POSTGRES_HOST,
-    port: parseInt(`${process.env.POSTGRES_PORT}`),
-    username: process.env.POSTGRES_USERNAME,
-    password: process.env.POSTGRES_PASSWORD,
-    database: process.env.POSTGRES_DB,
-    entities: [Order, Product], // Database tables
-    synchronize: true, // Set to false in production
-    ssl: {
-        rejectUnauthorized: false // For AWS RDS SSL connection
-    }
-    
-});
+// const database = new DataSource({
+//     type: "postgres",
+//     host: process.env.POSTGRES_HOST,
+//     port: parseInt(`${process.env.POSTGRES_PORT}`),
+//     username: process.env.POSTGRES_USERNAME,
+//     password: process.env.POSTGRES_PASSWORD,
+//     database: process.env.POSTGRES_DB,
+//     entities: [Order, Product], // Database tables
+//     synchronize: true, // Set to false in production
+//     // ssl: {
+//     //     rejectUnauthorized: false // For AWS RDS SSL connection
+//     // }
+//     schema: "public", // Explicitly specify schema
 
-database.initialize()
+// });
+
+PostgresDatabase.initialize()
 .then(() => {
     console.log("Connected to PostgreSQL");
+    
+    const Mongo = MongoDatabase.getInstance();
+
+    
+// Product APIs
+app.get("/api/products", async (req, res) => {
+    try {
+        const products = await Mongo.getProducts();
+        res.status(200).json(products);
+    } catch (err) {
+        console.error("Error fetching products:", err);
+        res.status(500).json({ error: "Error fetching products" });
+    }
+});
+
+app.get("/api/products/:id", async (req, res) => {
+    try {
+        const productId = Number(req.params.id);
+        if (isNaN(productId)) {
+            return res.status(400).json({ error: "Invalid product ID" });
+        }
+        const product = await Mongo.getProductById(productId);
+        if (product) {
+            res.json(product);
+        } else {
+            res.status(404).json({ error: "Product not found" });
+        }
+    } catch (err) {
+        console.error("Error fetching product:", err);
+        res.status(500).json({ error: "Error fetching product" });
+    }
+});
+
+
+
+        // Handle graceful shutdown
+        process.on('SIGINT', async () => {
+          await Mongo.close();
+          process.exit(0);
+        });
+
     
     app.post("/api/orders", async (req,res) => {
         try{
@@ -47,8 +91,8 @@ database.initialize()
             });
           }
 
-        const orderRepository = database.getRepository(Order);
-        const productRepository = database.getRepository(Product);
+        const orderRepository = PostgresDatabase.getRepository(Order);
+        const productRepository = PostgresDatabase.getRepository(Product);
 
         const creditCardLast4 = creditCard.slice(-4);
 
@@ -82,7 +126,7 @@ database.initialize()
 
     app.get("/api/orders", async (req,res) => {
         try{
-            const orderRepository = database.getRepository(Order);
+            const orderRepository = PostgresDatabase.getRepository(Order);
             const orders = await orderRepository.find({
                 relations: ["products"]
             });
@@ -99,7 +143,7 @@ database.initialize()
               return res.status(400).json({ error: "Invalid order ID" });
             }
 
-            const orderRepository = database.getRepository(Order);
+            const orderRepository = PostgresDatabase.getRepository(Order);
             const order = await orderRepository.findOne({
                 where: { id: orderId},
                 relations: ["products"]
