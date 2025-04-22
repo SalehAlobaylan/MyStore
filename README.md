@@ -10,6 +10,8 @@
 ![AWS S3](https://img.shields.io/badge/AWS%20S3-%23569A31.svg?style=for-the-badge&logo=amazon-s3&logoColor=white)
 ![AWS Elastic Beanstalk](https://img.shields.io/badge/AWS%20Elastic%20Beanstalk-232F3E?style=for-the-badge&logo=amazon-aws&logoColor=white)
 
+<img href="" src="https://github.com/SalehAlobaylan/MyStore/blob/main/ScreenShots/MyStore.png" alt="LoanIt" width="800"/>
+
 <!-- - A store built with MEAN stack -->
 - A store built with Angular connected with AWS postgres DB
 
